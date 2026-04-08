@@ -99,7 +99,7 @@ Page({
           pegs: buildPegs()
         });
 
-        this.playSplineAnimation(result.spline, result.slot_index);
+        this.playSplineAnimation(result.spline, result.slot_index, result.prize);
       },
       fail: (err) => {
         my.hideLoading();
@@ -108,7 +108,7 @@ Page({
       }
     });
   },
-  playSplineAnimation(spline, finalSlot) {
+  playSplineAnimation(spline, finalSlot, serverPrize) {
     setTimeout(() => {
       this.setData({ coinTop: BOARD.startY, coinLeft: BOARD.centerX });
       setTimeout(() => {
@@ -124,15 +124,13 @@ Page({
         this.setData({ coinTop: BOARD.slotsY });
         
         setTimeout(() => {
-          const slotIndex = finalSlot;
-          const multiplier = this.data.multipliers[slotIndex];
-          const winnings = Math.floor(this.data.bet * multiplier);
-          const profit = winnings - this.data.bet;
+          const profit = serverPrize - this.data.bet;
 
           const newHistory = [{ profit }, ...this.data.history].slice(0, 5);
 
           this.setData({
-            balance: this.data.balance + winnings,
+            // Balance already comes finalized from backend response
+            balance: this.data.balance,
             isPlaying: false,
             canPlay: true,
             showCoin: false,

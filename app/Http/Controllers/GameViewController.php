@@ -4,12 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Game;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class GameViewController extends Controller
 {
+    private function resolveDemoUser(): User
+    {
+        return User::firstOrCreate(
+            ['email' => 'demo@toka.local'],
+            [
+                'name' => 'Demo Toka',
+                'password' => Hash::make('password123'),
+                'coins' => 1000,
+            ]
+        );
+    }
+
     public function index()
     {
-        $user = User::find(1);
+        $user = $this->resolveDemoUser();
         $games = Game::where('is_active', true)->get();
 
         return view('games.index', [
@@ -20,7 +33,7 @@ class GameViewController extends Controller
 
     public function rasca()
     {
-        $user = User::find(1);
+        $user = $this->resolveDemoUser();
 
         return view('games.rasca', [
             'user' => $user,
@@ -30,7 +43,7 @@ class GameViewController extends Controller
 
     public function plinko()
     {
-        $user = User::find(1);
+        $user = $this->resolveDemoUser();
 
         return view('games.plinko', [
             'user' => $user,
@@ -40,7 +53,7 @@ class GameViewController extends Controller
 
     public function ruleta()
     {
-        $user = User::find(1);
+        $user = $this->resolveDemoUser();
 
         return view('games.ruleta', [
             'user' => $user,

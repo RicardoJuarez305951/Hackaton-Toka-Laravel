@@ -36,6 +36,6 @@ class Game extends Model
 
     public function history()
     {
-        return $this->hasMany(GamesHistory::class);
+        return $this->hasMany(GameHistory::class);
     }
 }

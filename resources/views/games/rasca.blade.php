@@ -212,6 +212,7 @@
 
     <script>
         const API_BASE = '/api';
+        const USER_ID = {{ $user->id }};
         const COST = 10;
         const MAX_SCRATCH_PERCENT = 70;
         
@@ -246,7 +247,7 @@
                 const res = await fetch(`${API_BASE}/rasca/play`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: 1, bet: COST })
+                    body: JSON.stringify({ user_id: USER_ID, bet: COST })
                 });
                 const data = await res.json();
                 
@@ -330,8 +331,7 @@
         function finishScratching() {
             if (finished) return;
             finished = true;
-            
-            balance += prize;
+
             updateBalance();
             
             const profit = prize - COST;

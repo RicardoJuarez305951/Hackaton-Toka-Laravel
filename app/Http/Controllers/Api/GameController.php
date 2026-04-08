@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
+use App\Models\GameHistory;
 use App\Models\GamePrize;
-use App\Models\GamesHistory;
 use App\Models\User;
 use App\Models\UserStreak;
 use Illuminate\Http\Request;
@@ -68,6 +68,17 @@ class GameController extends Controller
         $streak->save();
     }
 
+    private function resolvePlayer(Request $request): ?User
+    {
+        $userId = (int) $request->input('user_id');
+
+        if ($userId <= 0) {
+            return null;
+        }
+
+        return User::find($userId);
+    }
+
     public function balance(int $userId)
     {
         $user = User::find($userId);
@@ -110,7 +121,7 @@ class GameController extends Controller
         }
 
         $history = $user->history()
-            ->with(['game', 'prize'])
+            ->with(['game', 'gamePrize'])
             ->orderBy('played_at', 'desc')
             ->limit(20)
             ->get()
@@ -134,13 +145,14 @@ class GameController extends Controller
         ]);
     }
 
-    public function playRasca(Request $request, int $userId)
+    public function playRasca(Request $request)
     {
         $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
             'bet' => 'required|integer|min:10|max:100',
         ]);
 
-        $user = User::find($userId);
+        $user = $this->resolvePlayer($request);
 
         if (! $user) {
             return response()->json(['success' => false, 'message' => 'Usuario no encontrado'], 404);
@@ -148,6 +160,11 @@ class GameController extends Controller
 
         if ($user->coins < $request->bet) {
             return response()->json(['success' => false, 'message' => 'Saldo insuficiente'], 400);
+        }
+
+        $game = Game::where('slug', 'rasca')->first();
+        if (! $game) {
+            return response()->json(['success' => false, 'message' => 'Juego rasca no configurado'], 500);
         }
 
         $multiplier = $this->getMultiplier($user);
@@ -186,12 +203,11 @@ class GameController extends Controller
 
             $user->increment('coins', $prizeAmount);
 
-            $game = Game::where('slug', 'rasca')->first();
             $gamePrize = GamePrize::where('game_id', $game->id)
                 ->where('multiplier', $prizeMultiplier)
                 ->first();
 
-            GamesHistory::create([
+            GameHistory::create([
                 'user_id' => $user->id,
                 'game_id' => $game->id,
                 'game_prize_id' => $gamePrize->id ?? null,
@@ -225,13 +241,14 @@ class GameController extends Controller
         }
     }
 
-    public function playPlinko(Request $request, int $userId)
+    public function playPlinko(Request $request)
     {
         $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
             'bet' => 'required|integer|min:10|max:100',
         ]);
 
-        $user = User::find($userId);
+        $user = $this->resolvePlayer($request);
 
         if (! $user) {
             return response()->json(['success' => false, 'message' => 'Usuario no encontrado'], 404);
@@ -239,6 +256,11 @@ class GameController extends Controller
 
         if ($user->coins < $request->bet) {
             return response()->json(['success' => false, 'message' => 'Saldo insuficiente'], 400);
+        }
+
+        $game = Game::where('slug', 'plinko')->first();
+        if (! $game) {
+            return response()->json(['success' => false, 'message' => 'Juego plinko no configurado'], 500);
         }
 
         $multiplier = $this->getMultiplier($user);
@@ -258,12 +280,11 @@ class GameController extends Controller
 
             $user->increment('coins', $prizeAmount);
 
-            $game = Game::where('slug', 'plinko')->first();
             $gamePrize = GamePrize::where('game_id', $game->id)
                 ->where('multiplier', $prizeMultiplier)
                 ->first();
 
-            GamesHistory::create([
+            GameHistory::create([
                 'user_id' => $user->id,
                 'game_id' => $game->id,
                 'game_prize_id' => $gamePrize->id ?? null,
@@ -326,13 +347,14 @@ class GameController extends Controller
         ];
     }
 
-    public function playRuleta(Request $request, int $userId)
+    public function playRuleta(Request $request)
     {
         $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
             'bet' => 'required|integer|min:10|max:100',
         ]);
 
-        $user = User::find($userId);
+        $user = $this->resolvePlayer($request);
 
         if (! $user) {
             return response()->json(['success' => false, 'message' => 'Usuario no encontrado'], 404);
@@ -340,6 +362,11 @@ class GameController extends Controller
 
         if ($user->coins < $request->bet) {
             return response()->json(['success' => false, 'message' => 'Saldo insuficiente'], 400);
+        }
+
+        $game = Game::where('slug', 'ruleta')->first();
+        if (! $game) {
+            return response()->json(['success' => false, 'message' => 'Juego ruleta no configurado'], 500);
         }
 
         $multiplier = $this->getMultiplier($user);
@@ -380,12 +407,11 @@ class GameController extends Controller
                 $user->increment('coins', $prizeAmount);
             }
 
-            $game = Game::where('slug', 'ruleta')->first();
             $gamePrize = GamePrize::where('game_id', $game->id)
                 ->where('multiplier', $selectedSymbol['value'] / $request->bet)
                 ->first();
 
-            GamesHistory::create([
+            GameHistory::create([
                 'user_id' => $user->id,
                 'game_id' => $game->id,
                 'game_prize_id' => $gamePrize->id ?? null,

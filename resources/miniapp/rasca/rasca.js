@@ -52,6 +52,7 @@ Page({
         canvas.width = this.canvasWidth * dpr;
         canvas.height = this.canvasHeight * dpr;
         this.ctx.scale(dpr, dpr);
+        this.drawCover();
       });
   },
   goBack() {
@@ -83,13 +84,7 @@ Page({
   },
   initCanvas() {
     if (!this.ctx) return;
-    const dpr = my.getSystemInfoSync().pixelRatio || 2;
-    const canvas = document ? document.getElementById('scratchCanvas') : null;
-    if (canvas) {
-      canvas.width = this.canvasWidth * dpr;
-      canvas.height = this.canvasHeight * dpr;
-    }
-    this.ctx.scale(dpr, dpr);
+    this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     this.drawCover();
   },
   buyTicket() {
@@ -221,7 +216,8 @@ Page({
     setTimeout(() => {
       const profit = this.data.prize - this.data.cost;
       this.setData({
-        balance: this.data.balance + this.data.prize,
+        // Balance already comes finalized from backend response
+        balance: this.data.balance,
         hasTicket: false,
         canBuy: true,
         showResult: true,

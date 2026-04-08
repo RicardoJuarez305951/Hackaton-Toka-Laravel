@@ -238,6 +238,7 @@
 
     <script>
         const API_BASE = '/api';
+        const USER_ID = {{ $user->id }};
         const BET = 10;
         
         const SYMBOLS = [
@@ -283,7 +284,7 @@
                 const res = await fetch(`${API_BASE}/ruleta/play`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: 1, bet: BET })
+                    body: JSON.stringify({ user_id: USER_ID, bet: BET })
                 });
                 const data = await res.json();
                 
@@ -328,7 +329,6 @@
                         document.getElementById('winPopup').classList.remove('show');
                         
                         setTimeout(() => {
-                            balance = balance + prize;
                             updateBalance();
                             
                             reel.classList.remove('spinning');
