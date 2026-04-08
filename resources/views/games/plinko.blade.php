@@ -221,6 +221,7 @@
 
     <script>
         const API_BASE = '/api';
+        const USER_ID = {{ $user->id }};
         const BET = 10;
         const MULTIPLIERS = [10, 3, 1, 0.5, 1, 3, 10];
         
@@ -275,7 +276,7 @@
                 const res = await fetch(`${API_BASE}/plinko/play`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: 1, bet: BET })
+                    body: JSON.stringify({ user_id: USER_ID, bet: BET })
                 });
                 const data = await res.json();
                 
@@ -288,7 +289,7 @@
                 
                 balance = data.balance;
                 updateBalance();
-                playSplineAnimation(data.spline, data.slot_index);
+                playSplineAnimation(data.spline, data.slot_index, data.prize);
                 
             } catch (err) {
                 alert('Error de conexión');
@@ -297,7 +298,7 @@
             }
         }
 
-        function playSplineAnimation(spline, finalSlot) {
+        function playSplineAnimation(spline, finalSlot, serverPrize) {
             const ball = document.getElementById('ball');
             const positions = spline.positions || [];
             
@@ -314,15 +315,12 @@
                     ball.style.top = BOARD.slotsY + 'px';
                     
                     setTimeout(() => {
-                        const multiplier = MULTIPLIERS[finalSlot];
-                        const winnings = BET * multiplier;
-                        const profit = winnings - BET;
+                        const profit = serverPrize - BET;
                         
                         history.unshift({ profit });
                         if (history.length > 5) history.pop();
                         updateHistory();
-                        
-                        balance += winnings;
+
                         updateBalance();
                         
                         ball.style.display = 'none';

@@ -39,7 +39,7 @@ class User extends Authenticatable
 
     public function history(): HasMany
     {
-        return $this->hasMany(GamesHistory::class);
+        return $this->hasMany(GameHistory::class);
     }
 
     public function canPlay(int $bet): bool

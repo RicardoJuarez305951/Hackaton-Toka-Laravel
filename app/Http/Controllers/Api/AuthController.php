@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -25,8 +26,6 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $user->tokens()->delete();
-
         return response()->json([
             'success' => true,
             'user' => [
@@ -35,7 +34,8 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'coins' => $user->coins,
             ],
-            'token' => $user->createToken('miniapp')->plainTextToken,
+            // Hackathon mode: lightweight token placeholder (no Sanctum dependency)
+            'token' => base64_encode($user->id.'|'.Str::random(40)),
         ]);
     }
 
@@ -62,7 +62,8 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'coins' => $user->coins,
             ],
-            'token' => $user->createToken('miniapp')->plainTextToken,
+            // Hackathon mode: lightweight token placeholder (no Sanctum dependency)
+            'token' => base64_encode($user->id.'|'.Str::random(40)),
         ]);
     }
 }
