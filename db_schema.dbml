@@ -16,7 +16,7 @@ Table users {
   updated_at timestamp
 
   indexes {
-    email [name: "users_email_idx", unique]
+    email [name: 'users_email_idx', unique]
   }
 }
 
@@ -34,7 +34,7 @@ Table games {
   updated_at timestamp
 
   indexes {
-    slug [name: "games_slug_idx", unique]
+    slug [name: 'games_slug_idx', unique]
   }
 }
 
@@ -47,13 +47,12 @@ Table game_prizes {
   name varchar(100)
   multiplier decimal(5,2)
   probability decimal(6,5)
-  sort_order int [default: 0]
   is_active boolean [default: true]
   created_at timestamp
   updated_at timestamp
 
   indexes {
-    (game_id, is_active, sort_order) [name: "game_prizes_game_idx"]
+    (game_id, is_active) [name: 'game_prizes_game_idx']
   }
 }
 
@@ -70,18 +69,18 @@ Table user_streaks {
   updated_at timestamp
 
   indexes {
-    user_id [name: "user_streaks_user_idx", unique]
+    user_id [name: 'user_streaks_user_idx', unique]
   }
 }
 
 // =====================================================
 // HISTORIAL DE JUGADAS
 // =====================================================
-Table game_plays {
+Table games_history {
   id bigint [pk, increment]
   user_id bigint [ref: > users.id]
   game_id bigint [ref: > games.id]
-  threshold_id bigint [ref: > game_prizes.id]
+  game_prize_id bigint [ref: > game_prizes.id]
   bet int
   prize int
   balance_before bigint
@@ -90,17 +89,6 @@ Table game_plays {
   created_at timestamp
 
   indexes {
-    (user_id, played_at) [name: "game_plays_user_idx"]
+    (user_id, played_at) [name: 'games_history_user_idx']
   }
-}
-
-// =====================================================
-// SPLINES DE PLINKO (Solo para Plinko)
-// =====================================================
-Table plinko_splines {
-  id bigint [pk, increment]
-  game_play_id bigint [unique, ref: > game_plays.id]
-  spline_data json
-  duration_ms int [default: 2000]
-  created_at timestamp
 }

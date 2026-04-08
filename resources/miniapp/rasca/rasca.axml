@@ -1,0 +1,56 @@
+<view class="container">
+  <view class="header">
+    <view class="title-row">
+      <text class="back-btn" onTap="goBack">←</text>
+      <text class="title">Rasca y Gana</text>
+    </view>
+    <view class="balance">
+      <text class="coin-icon">🪙</text>
+      <text class="balance-amount">{{balance}} TP</text>
+    </view>
+  </view>
+
+  <view class="game-area">
+    <view class="card-wrapper">
+      <view class="card-header">
+        <text class="card-title">🎟️ RASCA Y GANA</text>
+        <text class="card-subtitle">¡Rascá para revelar tu premio!</text>
+      </view>
+
+      <view class="canvas-wrapper" onTouchStart="onTouchStart" onTouchMove="onTouchMove" onTouchEnd="onTouchEnd">
+        <canvas 
+          id="scratchCanvas" 
+          class="scratch-canvas"
+          onReady="onCanvasReady"
+        />
+        <view class="prize-display" a:if="{{showPrize}}">
+          <text class="prize-value">{{prize}}</text>
+          <text class="prize-label">TP</text>
+        </view>
+      </view>
+
+      <view class="card-footer" a:if="{{hasTicket && !finished}}">
+        <view class="total-bar">
+          <text class="total-label">Tu premio:</text>
+          <text class="total-value">{{prize}} TP</text>
+        </view>
+        <view class="progress-bar">
+          <view class="progress-fill" style="width: {{scratchedPercent}}%"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="controls">
+    <view class="buy-btn {{canBuy ? '' : 'disabled'}}" onTap="buyTicket">
+      <text class="btn-text">{{hasTicket ? 'RASCANDO...' : 'COMPRAR TICKET (10 TP)'}}</text>
+    </view>
+
+    <view class="result-panel {{showResult ? 'show' : ''}}">
+      <text class="result-emoji">{{resultProfit > 0 ? '🎉' : '😢'}}</text>
+      <text class="result-text {{resultProfit > 0 ? 'win' : 'lose'}}">
+        {{resultProfit > 0 ? '+' + resultProfit + ' TP' : resultProfit + ' TP'}}
+      </text>
+    </view>
+  </view>
+</view>

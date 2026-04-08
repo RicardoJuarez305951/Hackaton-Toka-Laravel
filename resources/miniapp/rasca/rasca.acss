@@ -1,0 +1,238 @@
+page {
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.container {
+  padding: 30rpx;
+  padding-bottom: 140rpx;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.back-btn {
+  font-size: 40rpx;
+  color: #fff;
+  padding: 10rpx 20rpx;
+}
+
+.title {
+  font-size: 44rpx;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 20rpx rgba(255,215,0,0.5);
+}
+
+.balance {
+  background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
+  border-radius: 30rpx;
+  padding: 16rpx 28rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  border: 2rpx solid #3d3d5c;
+}
+
+.coin-icon {
+  font-size: 36rpx;
+}
+
+.balance-amount {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+/* ── Game Area ── */
+.game-area {
+  margin-bottom: 30rpx;
+}
+
+.card-wrapper {
+  background: linear-gradient(135deg, #2a2a4a 0%, #1e1e38 100%);
+  border-radius: 24rpx;
+  border: 3rpx solid #ffd700;
+  box-shadow: 0 0 30rpx rgba(255,215,0,0.15);
+  overflow: hidden;
+}
+
+.card-header {
+  background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+  padding: 28rpx 30rpx;
+  text-align: center;
+}
+
+.card-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 900;
+  color: #1a1a2e;
+  letter-spacing: 4rpx;
+}
+
+.card-subtitle {
+  display: block;
+  font-size: 22rpx;
+  color: rgba(26,26,46,0.7);
+  margin-top: 8rpx;
+}
+
+/* ── Canvas Wrapper ── */
+.canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 400rpx;
+  margin: 0;
+  overflow: hidden;
+}
+
+.scratch-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.prize-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.prize-value {
+  font-size: 120rpx;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 30rpx rgba(255,215,0,0.8);
+}
+
+.prize-label {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #ffd700;
+  margin-top: -10rpx;
+}
+
+/* ── Card Footer ── */
+.card-footer {
+  padding: 20rpx 24rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  border-top: 2rpx solid #3d3d5c;
+}
+
+.total-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+}
+
+.total-label {
+  font-size: 28rpx;
+  color: #aaa;
+}
+
+.total-value {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: #ffd700;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12rpx;
+  background: #3d3d5c;
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b 0%, #ffd700 100%);
+  border-radius: 6rpx;
+  transition: width 0.1s ease;
+}
+
+/* ── Controls ── */
+.controls {
+  margin-bottom: 30rpx;
+}
+
+.buy-btn {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-radius: 20rpx;
+  padding: 28rpx;
+  text-align: center;
+  box-shadow: 0 8rpx 24rpx rgba(245,158,11,0.4);
+}
+
+.buy-btn.disabled {
+  background: #3d3d5c;
+  box-shadow: none;
+}
+
+.btn-text {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2rpx;
+}
+
+/* ── Result ── */
+.result-panel {
+  margin-top: 24rpx;
+  background: linear-gradient(135deg, #252542 0%, #1e1e38 100%);
+  border-radius: 16rpx;
+  padding: 28rpx;
+  text-align: center;
+  display: none;
+  border: 2rpx solid #3d3d5c;
+}
+
+.result-panel.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+}
+
+.result-emoji {
+  font-size: 44rpx;
+}
+
+.result-text {
+  font-size: 32rpx;
+  font-weight: 800;
+}
+
+.result-text.win {
+  color: #10b981;
+}
+
+.result-text.lose {
+  color: #ef5350;
+}

@@ -1,0 +1,301 @@
+page {
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.container {
+  padding: 30rpx;
+  padding-bottom: 140rpx;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.back-btn {
+  font-size: 40rpx;
+  color: #fff;
+  padding: 10rpx 20rpx;
+}
+
+.title {
+  font-size: 44rpx;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 20rpx rgba(255,215,0,0.5);
+}
+
+.balance {
+  background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
+  border-radius: 30rpx;
+  padding: 16rpx 28rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  border: 2rpx solid #3d3d5c;
+}
+
+.coin-icon {
+  font-size: 36rpx;
+}
+
+.balance-amount {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.game-board {
+  background: linear-gradient(180deg, #252542 0%, #1e1e38 100%);
+  border-radius: 24rpx;
+  padding: 20rpx;
+  margin-bottom: 30rpx;
+  border: 2rpx solid #3d3d5c;
+}
+
+/* ── Board container ── */
+.plinko-container {
+  width: 650rpx;
+  height: 650rpx;
+  margin: 0 auto 20rpx;
+  position: relative;
+  background: radial-gradient(circle at 50% 30%, #252550 0%, #15152a 100%);
+  border-radius: 20rpx;
+  border: 2rpx solid #3d3d5c;
+}
+
+/* ── Peg pyramid ── */
+.plinko-pyramid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 60rpx;
+}
+
+.plinko-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 66rpx;
+  height: 80rpx;
+  width: 100%;
+}
+
+/* ── Pegs ── */
+.peg {
+  width: 20rpx;
+  height: 20rpx;
+  background: radial-gradient(circle at 35% 35%, #fff 0%, #ccc 50%, #888 100%);
+  border-radius: 50%;
+  box-shadow:
+    0 0 10rpx rgba(255,255,255,0.6),
+    0 2rpx 6rpx rgba(0,0,0,0.4);
+  /* Smooth return to normal */
+  transition: transform 0.25s ease-out, box-shadow 0.25s ease-out, background 0.25s ease-out;
+}
+
+/* ── Peg hit state ── */
+.peg.hit {
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #ffd700 40%, #ffaa00 100%);
+  transform: scale(1.9);
+  box-shadow:
+    0 0 0rpx 6rpx rgba(255,215,0,0.35),
+    0 0 28rpx 8rpx rgba(255,200,0,0.6),
+    0 0 50rpx 12rpx rgba(255,160,0,0.3);
+  /* Fast snap to hit state */
+  transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, background 0.08s ease-out;
+}
+
+/* ── Prize slots ── */
+.slots-row {
+  position: absolute;
+  bottom: 20rpx;
+  left: 10rpx;
+  right: 10rpx;
+  display: flex;
+  justify-content: space-between;
+  gap: 6rpx;
+}
+
+.slot {
+  flex: 1;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8rpx;
+  box-sizing: border-box;
+}
+
+.slot.gold {
+  background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+  box-shadow: 0 0 12rpx rgba(255,215,0,0.4);
+}
+
+.slot.blue {
+  background: linear-gradient(180deg, #4fc3f7 0%, #0288d1 100%);
+  box-shadow: 0 0 12rpx rgba(79,195,247,0.3);
+}
+
+.slot.red {
+  background: linear-gradient(180deg, #ef5350 0%, #c62828 100%);
+  box-shadow: 0 0 12rpx rgba(239,83,80,0.3);
+}
+
+.slot.purple {
+  background: linear-gradient(180deg, #ab47bc 0%, #7b1fa2 100%);
+  box-shadow: 0 0 12rpx rgba(171,71,188,0.3);
+}
+
+.slot.green {
+  background: linear-gradient(180deg, #66bb6a 0%, #388e3c 100%);
+  box-shadow: 0 0 12rpx rgba(102,187,106,0.3);
+}
+
+.slot.gray {
+  background: linear-gradient(180deg, #78909c 0%, #455a64 100%);
+  box-shadow: 0 0 12rpx rgba(120,144,156,0.3);
+}
+
+.slot-multi {
+  font-size: 22rpx;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.3);
+}
+
+/* ── Ball ── */
+.ball {
+  position: absolute;
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%,
+    #fffde0 0%,
+    #ffd700 35%,
+    #e6a800 65%,
+    #b8860b 100%
+  );
+  box-shadow:
+    0 0 20rpx rgba(255,215,0,0.9),
+    0 0 40rpx rgba(255,180,0,0.4),
+    0 3rpx 6rpx rgba(0,0,0,0.5);
+  z-index: 20;
+  transform: translate(-50%, -50%) scale(1);
+  /* Smooth fall: ease-in for top→peg, ease-out for the arrival */
+  transition:
+    top 0.42s cubic-bezier(0.4, 0.0, 0.6, 1.0),
+    left 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.15s ease-out,
+    opacity 0.15s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ball.visible {
+  opacity: 1;
+}
+
+/* Squish on impact */
+.ball.bouncing {
+  transform: translate(-50%, -50%) scaleX(1.35) scaleY(0.72);
+  transition:
+    top 0.42s cubic-bezier(0.4, 0.0, 0.6, 1.0),
+    left 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.08s ease-out,
+    opacity 0.15s ease;
+}
+
+/* ── Play button ── */
+.controls {
+  margin-bottom: 30rpx;
+}
+
+.play-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20rpx;
+  padding: 28rpx;
+  text-align: center;
+  box-shadow: 0 8rpx 24rpx rgba(102,126,234,0.4);
+}
+
+.play-btn.disabled {
+  background: #3d3d5c;
+  box-shadow: none;
+}
+
+.play-text {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 4rpx;
+}
+
+/* ── History ── */
+.history-panel {
+  background: linear-gradient(135deg, #252542 0%, #1e1e38 100%);
+  border-radius: 24rpx;
+  padding: 24rpx;
+  border: 2rpx solid #3d3d5c;
+}
+
+.history-title {
+  display: block;
+  font-size: 26rpx;
+  color: #aaa;
+  margin-bottom: 20rpx;
+  text-transform: uppercase;
+  letter-spacing: 2rpx;
+}
+
+.history-list {
+  display: flex;
+  gap: 16rpx;
+}
+
+.history-item {
+  flex: 1;
+  background: #1a1a2e;
+  border-radius: 12rpx;
+  padding: 16rpx;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.history-item.win {
+  border: 2rpx solid #66bb6a;
+}
+
+.history-item.lose {
+  border: 2rpx solid #ef5350;
+}
+
+.history-emoji {
+  font-size: 32rpx;
+}
+
+.history-amount {
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.history-item.win .history-amount {
+  color: #66bb6a;
+}
+
+.history-item.lose .history-amount {
+  color: #ef5350;
+}
