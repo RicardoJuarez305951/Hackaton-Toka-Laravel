@@ -74,9 +74,6 @@
             display: flex;
             flex-direction: column;
         }
-        .reel.spinning {
-            transition: transform 5s cubic-bezier(0.05, 0.9, 0.1, 1);
-        }
 
         .reel-symbol {
             width: 200px;
@@ -181,24 +178,9 @@
         }
         .spin-btn:disabled { background: #3d3d5c; cursor: not-allowed; }
         .spin-btn:not(:disabled):hover { background: linear-gradient(135deg, #5a6fd6 0%, #5e3d85 100%); }
-
-        .loading {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .loading.hidden { display: none; }
-        .loading-content { background: #1a1a2e; padding: 30px; border-radius: 16px; }
     </style>
 </head>
 <body>
-    <div class="loading hidden" id="loading">
-        <div class="loading-content">🎲 Girando...</div>
-    </div>
 
     <div class="container">
         <div class="header">
@@ -235,12 +217,20 @@
             </button>
         </div>
     </div>
-
     <script>
         const API_BASE = '/api';
         const USER_ID = {{ $user->id }};
         const BET = 10;
-        
+        const MIN_SPIN_MS = 1500;
+        const STOP_DURATION_MS = 1400;
+        const ERROR_STOP_DURATION_MS = 500;
+        const SPIN_SPEED_PX_PER_SEC = 2200;
+        const STOP_EXTRA_LOOPS = 2;
+        const SYMBOL_HEIGHT = 160;
+        const REEL_SYMBOL_COUNT = 120;
+        const CYCLE_HEIGHT = SYMBOL_HEIGHT * 8;
+        const WIN_ROW_BASE = 24;
+
         const SYMBOLS = [
             { text: '0', color: '#131313', value: 0 },
             { text: '10', color: '#51aa5f', value: 10 },
@@ -251,19 +241,29 @@
             { text: '500', color: '#22345a', value: 500 },
             { text: '1000', color: '#c29706', value: 1000 }
         ];
-        
+
+        const SPIN_STATE = {
+            IDLE: 'idle',
+            WAITING_RESULT: 'waiting_result',
+            STOPPING: 'stopping',
+        };
+
         let balance = {{ $balance }};
-        let spinning = false;
-        let canSpin = true;
+        let spinState = SPIN_STATE.IDLE;
+        let currentTranslate = 0;
+        let frameRequestId = null;
+        let lastFrameTimestamp = 0;
+        let spinStartedAt = 0;
 
         window.onload = function() {
-            generateReel(40);
+            generateReel(REEL_SYMBOL_COUNT);
+            applyTranslate(0);
         };
 
         function generateReel(count) {
             const reel = document.getElementById('reel');
             reel.innerHTML = '';
-            
+
             for (let i = 0; i < count; i++) {
                 const symbol = SYMBOLS[i % SYMBOLS.length];
                 const div = document.createElement('div');
@@ -274,77 +274,162 @@
             }
         }
 
-        async function spinWheel() {
-            if (spinning || BET > balance) return;
-            
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('spinBtn').disabled = true;
-            
-            try {
-                const res = await fetch(`${API_BASE}/ruleta/play`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: USER_ID, bet: BET })
-                });
-                const data = await res.json();
-                
-                if (!data.success) {
-                    alert(data.message || 'Error');
-                    document.getElementById('loading').classList.add('hidden');
-                    document.getElementById('spinBtn').disabled = false;
-                    return;
-                }
-                
-                balance = data.balance;
-                updateBalance();
-                animateSpin(data.win_index, data.prize);
-                
-            } catch (err) {
-                alert('Error de conexión');
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('spinBtn').disabled = false;
+        function applyTranslate(value) {
+            currentTranslate = value;
+            document.getElementById('reel').style.transform = `translateY(${value}px)`;
+        }
+
+        function normalizeToCycle(value) {
+            let normalized = value;
+
+            while (normalized <= -CYCLE_HEIGHT) normalized += CYCLE_HEIGHT;
+            while (normalized > 0) normalized -= CYCLE_HEIGHT;
+
+            return normalized;
+        }
+
+        function stopContinuousSpin() {
+            if (frameRequestId !== null) {
+                cancelAnimationFrame(frameRequestId);
+                frameRequestId = null;
             }
         }
 
-        function animateSpin(winIndex, prize) {
+        function startContinuousSpin() {
             const reel = document.getElementById('reel');
-            const symbolHeight = 160;
-            const winPosition = 24 + winIndex;
-            const targetOffset = -(winPosition - 1) * symbolHeight;
-            
             reel.style.transition = 'none';
-            reel.style.transform = 'translateY(0)';
-            
-            setTimeout(() => {
-                spinning = true;
-                reel.classList.add('spinning');
-                reel.style.transform = `translateY(${targetOffset}px)`;
-                
+
+            lastFrameTimestamp = performance.now();
+
+            const loop = (timestamp) => {
+                if (spinState !== SPIN_STATE.WAITING_RESULT) return;
+
+                const elapsedSeconds = (timestamp - lastFrameTimestamp) / 1000;
+                lastFrameTimestamp = timestamp;
+
+                let nextTranslate = currentTranslate - (SPIN_SPEED_PX_PER_SEC * elapsedSeconds);
+                nextTranslate = normalizeToCycle(nextTranslate);
+
+                applyTranslate(nextTranslate);
+                frameRequestId = requestAnimationFrame(loop);
+            };
+
+            frameRequestId = requestAnimationFrame(loop);
+        }
+
+        function waitMinimumSpin() {
+            const elapsed = performance.now() - spinStartedAt;
+            const pendingMs = Math.max(0, MIN_SPIN_MS - elapsed);
+
+            return new Promise((resolve) => setTimeout(resolve, pendingMs));
+        }
+
+        function animateTo(target, durationMs, easing) {
+            const reel = document.getElementById('reel');
+
+            return new Promise((resolve) => {
+                reel.style.transition = `transform ${durationMs}ms ${easing}`;
+                requestAnimationFrame(() => {
+                    applyTranslate(target);
+                });
+
+                setTimeout(resolve, durationMs + 50);
+            });
+        }
+
+        function getLandingOffset(winIndex) {
+            const rawOffset = -((WIN_ROW_BASE + winIndex - 1) * SYMBOL_HEIGHT);
+            return normalizeToCycle(rawOffset);
+        }
+
+        async function stopAtResult(winIndex) {
+            spinState = SPIN_STATE.STOPPING;
+            stopContinuousSpin();
+
+            const landingOffset = getLandingOffset(winIndex);
+            const deltaToLanding = ((currentTranslate - landingOffset) % CYCLE_HEIGHT + CYCLE_HEIGHT) % CYCLE_HEIGHT;
+            const targetOffset = currentTranslate - ((STOP_EXTRA_LOOPS * CYCLE_HEIGHT) + deltaToLanding);
+
+            await animateTo(targetOffset, STOP_DURATION_MS, 'cubic-bezier(0.08, 0.85, 0.14, 1)');
+
+            document.getElementById('reel').style.transition = 'none';
+            applyTranslate(landingOffset);
+        }
+
+        async function stopWithError() {
+            spinState = SPIN_STATE.STOPPING;
+            stopContinuousSpin();
+
+            const targetOffset = currentTranslate - Math.round(CYCLE_HEIGHT * 0.4);
+            await animateTo(targetOffset, ERROR_STOP_DURATION_MS, 'cubic-bezier(0.2, 0.9, 0.3, 1)');
+
+            document.getElementById('reel').style.transition = 'none';
+            applyTranslate(normalizeToCycle(currentTranslate));
+        }
+
+        function showResultPopup(winIndex, prize) {
+            const popup = document.getElementById('winPopup');
+            const text = document.getElementById('winText');
+            popup.style.background = SYMBOLS[winIndex].color;
+            text.textContent = (prize > 0 ? '+' : '') + prize + ' TP';
+            popup.classList.add('show');
+
+            return new Promise((resolve) => {
                 setTimeout(() => {
-                    document.getElementById('winPopup').style.background = SYMBOLS[winIndex].color;
-                    document.getElementById('winText').textContent = (prize > 0 ? '+' : '') + prize + ' TP';
-                    document.getElementById('winPopup').classList.add('show');
-                    
-                    setTimeout(() => {
-                        document.getElementById('winPopup').classList.remove('show');
-                        
-                        setTimeout(() => {
-                            updateBalance();
-                            
-                            reel.classList.remove('spinning');
-                            reel.style.transition = 'none';
-                            reel.style.transform = 'translateY(0)';
-                            
-                            spinning = false;
-                            canSpin = true;
-                            document.getElementById('spinBtn').disabled = false;
-                            document.getElementById('loading').classList.add('hidden');
-                            
-                            generateReel(40);
-                        }, 500);
-                    }, 2000);
-                }, 5000);
-            }, 50);
+                    popup.classList.remove('show');
+                    setTimeout(resolve, 250);
+                }, 1600);
+            });
+        }
+
+        async function requestSpinResult() {
+            const res = await fetch(`${API_BASE}/ruleta/play`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: USER_ID, bet: BET })
+            });
+
+            return res.json();
+        }
+
+        function finishSpin() {
+            stopContinuousSpin();
+            spinState = SPIN_STATE.IDLE;
+            document.getElementById('spinBtn').disabled = false;
+        }
+
+        async function spinWheel() {
+            if (spinState !== SPIN_STATE.IDLE || BET > balance) return;
+
+            document.getElementById('winPopup').classList.remove('show');
+            document.getElementById('spinBtn').disabled = true;
+
+            spinState = SPIN_STATE.WAITING_RESULT;
+            spinStartedAt = performance.now();
+            startContinuousSpin();
+
+            try {
+                const [data] = await Promise.all([
+                    requestSpinResult(),
+                    waitMinimumSpin(),
+                ]);
+
+                if (!data.success) {
+                    await stopWithError();
+                    alert(data.message || 'Error');
+                    return;
+                }
+
+                await stopAtResult(data.win_index);
+                balance = data.balance;
+                updateBalance();
+                await showResultPopup(data.win_index, data.prize);
+            } catch (err) {
+                await stopWithError();
+                alert('Error de conexión');
+            } finally {
+                finishSpin();
+            }
         }
 
         function updateBalance() {
@@ -353,3 +438,5 @@
     </script>
 </body>
 </html>
+
+

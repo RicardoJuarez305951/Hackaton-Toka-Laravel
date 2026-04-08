@@ -44,7 +44,11 @@
         }
         .balance-amount { font-size: 18px; font-weight: 700; color: #ffd700; }
 
-        .game-area { margin-bottom: 20px; }
+        .game-area {
+            width: 75%;
+            max-width: 520px;
+            margin: 0 auto 20px;
+        }
 
         .card-wrapper {
             background: linear-gradient(135deg, #2a2a4a 0%, #1e1e38 100%);
@@ -153,6 +157,12 @@
             padding: 30px;
             border-radius: 16px;
             text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                width: 100%;
+            }
         }
     </style>
 </head>

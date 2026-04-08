@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\GamePlayService;
+use App\Services\PlinkoPhysicsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PlinkoController extends Controller
 {
-    public function __construct(private readonly GamePlayService $gamePlayService)
+    public function __construct(
+        private readonly GamePlayService $gamePlayService,
+        private readonly PlinkoPhysicsService $plinkoPhysicsService,
+    )
     {
     }
 
@@ -34,6 +38,12 @@ class PlinkoController extends Controller
 
         $game = $this->gamePlayService->findGameBySlug('plinko');
         if (! $game) {
+            Log::warning('Plinko game is not configured', [
+                'game_slug' => 'plinko',
+                'user_id' => $user->id,
+                'route' => $request->path(),
+            ]);
+
             return response()->json(['success' => false, 'message' => 'Juego plinko no configurado'], 500);
         }
 
@@ -44,8 +54,9 @@ class PlinkoController extends Controller
             $response = $this->gamePlayService->withTransaction(function () use ($user, $bet, $game, $multiplier, $balanceBefore) {
                 $user->decrement('coins', $bet);
 
-                $spline = $this->generatePlinkoSpline();
-                $slotIndex = (int) end($spline['positions']);
+                $simulation = $this->plinkoPhysicsService->simulate();
+                $spline = $simulation['spline'];
+                $slotIndex = (int) $simulation['slot_index'];
                 $multipliers = [10, 3, 1, 0.5, 1, 3, 10];
                 $prizeMultiplier = (float) ($multipliers[$slotIndex] ?? 1);
 
@@ -64,6 +75,16 @@ class PlinkoController extends Controller
                     'prize' => $prizeAmount,
                     'balance_before' => $balanceBefore,
                     'balance_after' => $user->fresh()->coins,
+                    'meta' => [
+                        'type' => 'plinko_v2',
+                        'seed' => $spline['seed'] ?? null,
+                        'slot_index' => $slotIndex,
+                        'positions' => $spline['positions'] ?? [],
+                        'keyframes' => $spline['keyframes'] ?? [],
+                        'duration_ms' => $spline['duration_ms'] ?? null,
+                        'board' => $spline['board'] ?? null,
+                        'physics' => $spline['physics'] ?? null,
+                    ],
                     'played_at' => now(),
                 ]);
 
@@ -90,27 +111,4 @@ class PlinkoController extends Controller
             ], 500);
         }
     }
-
-    private function generatePlinkoSpline(): array
-    {
-        $positions = [];
-        $rightDrops = 0;
-        $positions[] = 0;
-
-        for ($row = 0; $row < 6; $row++) {
-            $goRight = mt_rand(0, 1) === 1;
-
-            if ($goRight) {
-                $rightDrops++;
-            }
-
-            $positions[] = $rightDrops;
-        }
-
-        return [
-            'positions' => $positions,
-            'final_slot' => $rightDrops,
-        ];
-    }
 }
-
