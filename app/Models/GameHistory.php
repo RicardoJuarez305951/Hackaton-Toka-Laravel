@@ -20,6 +20,7 @@ class GameHistory extends Model
         'prize',
         'balance_before',
         'balance_after',
+        'meta',
         'played_at',
     ];
 
@@ -27,6 +28,7 @@ class GameHistory extends Model
     {
         return [
             'played_at' => 'datetime',
+            'meta' => 'array',
         ];
     }
 
