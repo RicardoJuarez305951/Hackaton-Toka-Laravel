@@ -1,5 +1,5 @@
 // =====================================================
-// HACKATÓN TOKA - ESQUEMA DE BASE DE DATOS
+// HACKATÓN TOKA - ESQUEMA FINAL
 // Compatible con DBdiagram.io
 // =====================================================
 
@@ -9,155 +9,98 @@
 Table users {
   id bigint [pk, increment]
   name varchar(255)
-  email varchar(255) [not null, unique]
-  password varchar(255) [not null]
+  email varchar(255) [unique]
+  password varchar(255)
   coins bigint [default: 1000]
-  total_won bigint [default: 0]
-  total_played bigint [default: 0]
   created_at timestamp
   updated_at timestamp
 
   indexes {
-    email [name: 'users_email_idx', unique]
+    email [name: "users_email_idx", unique]
   }
 }
 
 // =====================================================
-// CATÁLOGO DE JUEGOS (Escalable para N juegos)
+// CATÁLOGO DE JUEGOS
 // =====================================================
 Table games {
   id bigint [pk, increment]
-  slug varchar(50) [not null, unique]
-  name varchar(100) [not null]
+  slug varchar(50) [unique]
+  name varchar(100)
   description text
   icon varchar(255)
-  min_bet int [default: 10]
-  max_bet int [default: 100]
-  min_prize int [default: 25]
-  max_prize int [default: 1000]
   is_active boolean [default: true]
-  has_physics boolean [default: false, note: 'Si el juego necesita cálculo físico (Plinko)']
   created_at timestamp
   updated_at timestamp
 
   indexes {
-    slug [name: 'games_slug_idx', unique]
+    slug [name: "games_slug_idx", unique]
   }
 }
 
 // =====================================================
-// UMBRALES DE RECOMPENSA (Probabilidades escalables por juego)
+// UMBRALES DE RECOMPENSA (Probabilidades escalables)
 // =====================================================
-Table game_thresholds {
+Table game_prizes {
   id bigint [pk, increment]
-  game_id bigint [not null, ref: > games.id]
-  name varchar(100) [not null]
-  multiplier decimal(5,2) [not null]
-  probability decimal(6,5) [not null]
-  min_prize int
-  max_prize int
+  game_id bigint [ref: > games.id]
+  name varchar(100)
+  multiplier decimal(5,2)
+  probability decimal(6,5)
   sort_order int [default: 0]
   is_active boolean [default: true]
   created_at timestamp
   updated_at timestamp
 
   indexes {
-    (game_id, is_active, sort_order) [name: 'game_thresholds_game_idx']
+    (game_id, is_active, sort_order) [name: "game_prizes_game_idx"]
   }
 }
 
 // =====================================================
-// RACHAS DE USUARIO (Persistidas)
+// RACHAS DE USUARIO
 // =====================================================
 Table user_streaks {
   id bigint [pk, increment]
-  user_id bigint [not null, unique, ref: > users.id]
+  user_id bigint [unique, ref: > users.id]
   multiplier decimal(4,2) [default: 1.00]
   streak_count int [default: 0]
-  longest_streak int [default: 0]
   last_played_at timestamp
-  streak_resets_at timestamp
   created_at timestamp
   updated_at timestamp
 
   indexes {
-    user_id [name: 'user_streaks_user_idx', unique]
+    user_id [name: "user_streaks_user_idx", unique]
   }
 }
 
 // =====================================================
-// HISTORIAL DE JUGADAS (Trazabilidad completa)
+// HISTORIAL DE JUGADAS
 // =====================================================
 Table game_plays {
   id bigint [pk, increment]
-  user_id bigint [not null, ref: > users.id]
-  game_id bigint [not null, ref: > games.id]
-  threshold_id bigint [ref: > game_thresholds.id]
-  bet int [not null]
-  multiplier decimal(5,2) [not null]
-  prize int [default: 0]
-  net_profit int [default: 0]
-  streak_at_play decimal(4,2)
-  balance_before bigint [not null]
-  balance_after bigint [not null]
-  ip_address varchar(45)
-  user_agent text
-  device_id varchar(255)
-  played_at timestamp [not null]
-  created_at timestamp
-  updated_at timestamp
-
-  indexes {
-    (user_id, played_at) [name: 'game_plays_user_idx']
-    (game_id, played_at) [name: 'game_plays_game_idx']
-  }
-}
-
-// =====================================================
-// SPLINES DE FÍSICA (Para juegos que lo requieran)
-// =====================================================
-Table game_splines {
-  id bigint [pk, increment]
-  game_play_id bigint [not null, unique, ref: > game_plays.id]
-  spline_data json
-  start_x decimal(8,2)
-  start_y decimal(8,2)
-  end_x decimal(8,2)
-  end_y decimal(8,2)
-  pegs_hit json
-  slot_index int
-  slot_multiplier decimal(5,2)
-  duration_ms int [default: 2000]
-  created_at timestamp
-}
-
-// =====================================================
-// CONFIGURACIÓN DE RACHAS
-// =====================================================
-Table streak_configs {
-  id bigint [pk, increment]
-  key varchar(50) [not null, unique]
-  value varchar(50)
-  description text
-  created_at timestamp
-  updated_at timestamp
-}
-
-// =====================================================
-// LOGS DE OPERACIONES (Auditoría)
-// =====================================================
-Table operation_logs {
-  id bigint [pk, increment]
   user_id bigint [ref: > users.id]
-  action varchar(100) [not null]
-  amount bigint [default: 0]
+  game_id bigint [ref: > games.id]
+  threshold_id bigint [ref: > game_prizes.id]
+  bet int
+  prize int
   balance_before bigint
   balance_after bigint
-  metadata json
-  ip_address varchar(45)
+  played_at timestamp
   created_at timestamp
 
   indexes {
-    (user_id, created_at) [name: 'operation_logs_user_idx']
+    (user_id, played_at) [name: "game_plays_user_idx"]
   }
+}
+
+// =====================================================
+// SPLINES DE PLINKO (Solo para Plinko)
+// =====================================================
+Table plinko_splines {
+  id bigint [pk, increment]
+  game_play_id bigint [unique, ref: > game_plays.id]
+  spline_data json
+  duration_ms int [default: 2000]
+  created_at timestamp
 }
