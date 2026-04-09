@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DebugController;
 use App\Http\Controllers\Api\GameController;
+use App\Http\Controllers\Api\GoldenTreeController;
+use App\Http\Controllers\Api\HiloController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PlinkoController;
 use App\Http\Controllers\Api\RascaController;
@@ -36,6 +38,19 @@ Route::prefix('plinko')->group(function () {
 
 Route::prefix('ruleta')->group(function () {
     Route::post('/play', [RuletaController::class, 'play']);
+});
+
+Route::prefix('hilo')->group(function () {
+    Route::post('/start', [HiloController::class, 'start']);
+    Route::post('/guess', [HiloController::class, 'guess']);
+    Route::post('/cashout', [HiloController::class, 'cashout']);
+});
+
+Route::prefix('goldentree')->group(function () {
+    Route::get('/state', [GoldenTreeController::class, 'state']);
+    Route::post('/collect', [GoldenTreeController::class, 'collect']);
+    Route::post('/water', [GoldenTreeController::class, 'water']);
+    Route::post('/resolve-event', [GoldenTreeController::class, 'resolveEvent']);
 });
 
 Route::prefix('debug')->group(function () {
