@@ -4,6 +4,8 @@ namespace App\Services;
 
 class PlinkoPhysicsService
 {
+    public const SLOT_MULTIPLIERS = [5, 2, 1, 0.5, 1, 2, 5];
+
     private const BOARD_WIDTH = 350.0;
     private const BOARD_HEIGHT = 350.0;
     private const BOARD_ROWS = 6;
