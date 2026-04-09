@@ -1,0 +1,50 @@
+<view class="container">
+  <view class="header">
+    <view class="title-row">
+      <text class="back-btn" onTap="goBack">←</text>
+      <text class="title">Plinko</text>
+    </view>
+    <view class="balance">
+      <text class="coin-icon">🪙</text>
+      <text class="balance-amount">{{balance}} TP</text>
+    </view>
+  </view>
+
+  <view class="game-board">
+    <view class="plinko-container">
+      <!-- Ball -->
+      <view class="ball {{showCoin ? 'visible' : ''}} {{ballBouncing ? 'bouncing' : ''}}"
+            style="top: {{coinTop}}rpx; left: {{coinLeft}}rpx;"></view>
+
+      <!-- Pegs — dynamic so we can apply .hit per peg -->
+      <view class="plinko-pyramid">
+        <view class="plinko-row" a:for="{{pegs}}" a:for-item="row" a:for-index="rowIdx">
+          <view
+            class="peg {{item.hit ? 'hit' : ''}}"
+            a:for="{{row}}"
+            a:for-item="item"
+            a:for-index="colIdx"
+          ></view>
+        </view>
+      </view>
+
+      <!-- Prize slots -->
+      <view class="slots-row">
+        <view class="slot gold"><text class="slot-multi">10x</text></view>
+        <view class="slot blue"><text class="slot-multi">3x</text></view>
+        <view class="slot green"><text class="slot-multi">1x</text></view>
+        <view class="slot gray"><text class="slot-multi">0.5x</text></view>
+        <view class="slot green"><text class="slot-multi">1x</text></view>
+        <view class="slot blue"><text class="slot-multi">3x</text></view>
+        <view class="slot gold"><text class="slot-multi">10x</text></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="controls">
+    <view class="play-btn {{canPlay ? '' : 'disabled'}}" onTap="playGame">
+      <text class="play-text">{{isPlaying ? 'Jugando...' : 'Soltar Bola · 10 TC'}}</text>
+    </view>
+  </view>
+
+</view>

@@ -1,0 +1,16 @@
+[
+  {
+    "name": "miniapp-web",
+    "sourceType": "alipay",
+    "target": "web",
+    "compileType": "miniprogram",
+    "srcPath": ".miniapp-web-src",
+    "outputPath": "public/miniapp-web",
+    "autoInjectRuntime": {
+      "api": true
+    },
+    "web": {
+      "publicPath": "/miniapp-web/"
+    }
+  }
+]

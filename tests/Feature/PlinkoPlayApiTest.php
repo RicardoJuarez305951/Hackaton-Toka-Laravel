@@ -58,6 +58,14 @@ class PlinkoPlayApiTest extends TestCase
 
         $this->assertSame($payload['slot_index'], $payload['spline']['final_slot']);
         $this->assertNotEmpty($payload['spline']['keyframes']);
+
+        $hasTopPegHit = collect($payload['spline']['keyframes'])->contains(
+            fn (array $frame) => ($frame['event'] ?? null) === 'hit'
+                && ($frame['row'] ?? null) === 0
+                && ($frame['col'] ?? null) === 0
+        );
+        $this->assertTrue($hasTopPegHit);
+
         $this->assertIsArray($payload['spline']['positions']);
         $this->assertCount(7, $payload['spline']['positions']);
 
@@ -71,4 +79,3 @@ class PlinkoPlayApiTest extends TestCase
         $this->assertIsArray($history->meta['keyframes'] ?? null);
     }
 }
-

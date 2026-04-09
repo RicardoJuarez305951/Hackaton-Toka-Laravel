@@ -1,0 +1,104 @@
+<view class="container">
+  <view class="header">
+    <view class="title-row">
+      <text class="title">Minijuegos</text>
+    </view>
+    <view class="balance">
+      <text class="coin-icon">🪙</text>
+      <text class="balance-amount">{{balance}} TP</text>
+    </view>
+  </view>
+
+  <view class="games-section">
+    <text class="section-title">ELIGE TU JUEGO</text>
+    <view class="games-list">
+      <view class="game-card" onTap="goToGame" data-game="plinko">
+        <view class="game-icon-wrapper plinko">
+          <text class="game-icon">🎯</text>
+        </view>
+        <view class="game-info">
+          <text class="game-name">Plinko</text>
+          <text class="game-desc">Deja caer la bola y multiplica</text>
+        </view>
+        <view class="game-arrow">→</view>
+      </view>
+
+      <view class="game-card" onTap="goToGame" data-game="rasca">
+        <view class="game-icon-wrapper rasca">
+          <text class="game-icon">🧾</text>
+        </view>
+        <view class="game-info">
+          <text class="game-name">Regalo del Destino</text>
+          <text class="game-desc">El destino tiene un regalo para ti</text>
+        </view>
+        <view class="game-arrow">→</view>
+      </view>
+
+      <view class="game-card" onTap="goToGame" data-game="ruleta">
+        <view class="game-icon-wrapper ruleta">
+          <text class="game-icon">🎰</text>
+        </view>
+        <view class="game-info">
+          <text class="game-name">Gira y Gana</text>
+          <text class="game-desc">¡Tu fortuna te espera!</text>
+        </view>
+        <view class="game-arrow">→</view>
+      </view>
+
+      <view class="game-card" onTap="goToGame" data-game="hilo">
+        <view class="game-icon-wrapper hilo">
+          <text class="game-icon">🎴</text>
+        </view>
+        <view class="game-info">
+          <text class="game-name">Hi-Lo</text>
+          <text class="game-desc">¿Mayor o menor? Adivina</text>
+        </view>
+        <view class="game-arrow">→</view>
+      </view>
+
+      <view class="game-card" onTap="goToGame" data-game="goldentree">
+        <view class="game-icon-wrapper goldentree">
+          <text class="game-icon">🌳</text>
+        </view>
+        <view class="game-info">
+          <text class="game-name">Árbol Dorado</text>
+          <text class="game-desc">Cultiva y Cosecha</text>
+        </view>
+        <view class="game-arrow">→</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="stats-summary">
+    <view class="stat-box">
+      <text class="stat-icon">🎮</text>
+      <text class="stat-value">{{gamesPlayed}}</text>
+      <text class="stat-label">Jugados</text>
+    </view>
+    <view class="stat-box win">
+      <text class="stat-icon">💰</text>
+      <text class="stat-value">{{totalWon}}</text>
+      <text class="stat-label">Ganado</text>
+    </view>
+    <view class="stat-box">
+      <text class="stat-icon">🔥</text>
+      <text class="stat-value">{{streak}}</text>
+      <text class="stat-label">Racha</text>
+    </view>
+  </view>
+
+  <view class="navbar">
+    <view class="nav-item active" onTap="navigateTo" data-page="games">
+      <text class="nav-icon">🎮</text>
+      <text class="nav-text">Juegos</text>
+    </view>
+    <view class="nav-item" onTap="navigateTo" data-page="tokapoints">
+      <text class="nav-icon">💰</text>
+      <text class="nav-text">TokaCoins</text>
+    </view>
+    <view class="nav-item" onTap="navigateTo" data-page="premios">
+      <text class="nav-icon">🎁</text>
+      <text class="nav-text">Premios</text>
+    </view>
+  </view>
+</view>

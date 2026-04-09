@@ -1,0 +1,124 @@
+<view class="page-wrapper">
+
+  <!-- ── HEADER HERO ── -->
+  <view class="header-hero">
+    <view class="header-inner">
+      <view class="header-top-row">
+        <view class="back-btn-wrap" onTap="goBack">
+          <text class="back-arrow">←</text>
+        </view>
+        <text class="header-title">Regalo del Destino</text>
+        <view class="balance-chip">
+          <text class="coin-icon">🪙</text>
+          <text class="balance-amount">{{balance}} TC</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ── CONTENIDO PRINCIPAL ── -->
+  <view class="content-area">
+
+    <!-- ARENA DEL COFRE -->
+    <view class="arena-card">
+
+      <!-- Tier ladder (top) -->
+     <!--  <view class="tier-ladder">
+        <view class="tier-pip {{currentTier >= 5 ? 'active legendary' : 'inactive'}}">
+          <text class="pip-label">Legendario</text>
+        </view>
+        <view class="tier-pip {{currentTier >= 4 ? 'active epic' : 'inactive'}}">
+          <text class="pip-label">Épico</text>
+        </view>
+        <view class="tier-pip {{currentTier >= 3 ? 'active rare' : 'inactive'}}">
+          <text class="pip-label">Raro</text>
+        </view>
+        <view class="tier-pip {{currentTier >= 2 ? 'active uncommon' : 'inactive'}}">
+          <text class="pip-label">Poco Común</text>
+        </view>
+        <view class="tier-pip {{currentTier >= 1 ? 'active common' : 'inactive'}}">
+          <text class="pip-label">Común</text>
+        </view>
+      </view>-->
+
+      <!-- Arena del brillo -->
+      <view class="chest-arena tier-bg-{{tierClass}}">
+
+        <!-- Aura exterior -->
+        <view class="aura aura-outer tier-aura-{{tierClass}} {{phase === 'playing' ? 'pulsing' : ''}}"></view>
+        <view class="aura aura-mid tier-aura-{{tierClass}} {{phase === 'playing' ? 'pulsing-mid' : ''}}"></view>
+
+        <!-- Cofre principal (tappable cuando está en juego) -->
+        <view
+          class="chest-wrap {{phase === 'playing' ? 'tappable' : ''}} {{chestAnim}}"
+          onTap="tapChest"
+        >
+          <text class="chest-emoji {{phase === 'playing' ? 'chest-glow-' + tierClass : ''}}">
+            {{phase === 'finished' ? '🎊' : '🎁'}}
+          </text>
+          <view class="tap-ripple" a:if="{{phase === 'playing'}}"></view>
+        </view>
+
+        <!-- Mensaje de estado debajo del cofre -->
+        <view class="status-area">
+          <!-- Idle -->
+          <text class="status-hint" a:if="{{phase === 'idle'}}">Presioná "Iniciar" para comenzar</text>
+
+          <!-- Playing -->
+          <view class="playing-status" a:if="{{phase === 'playing'}}">
+            <view class="tier-badge-active tier-badge-{{tierClass}}">
+              <text class="tier-badge-name">{{tierName || '¡Toca el cofre!'}}</text>
+            </view>
+            <text class="tap-hint">Tocá para seguir intentando suerte →</text>
+          </view>
+
+          <!-- Finished -->
+          <view class="finish-status" a:if="{{phase === 'finished'}}">
+            <text class="result-emoji">{{resultProfit >= 0 ? '✨' : '😢'}}</text>
+            <view class="final-tier-badge tier-badge-{{tierClass}}">
+              <text class="final-tier-name">{{tierName || 'Sin suerte'}}</text>
+            </view>
+            <view class="prize-reveal">
+              <text class="prize-amount">{{prize}} TC</text>
+              <text class="prize-label">ganados</text>
+            </view>
+          </view>
+        </view>
+
+      </view><!-- /chest-arena -->
+
+    </view><!-- /arena-card -->
+
+    <!-- ── CONTROLES ── -->
+    <view class="controls">
+
+      <!-- Botón Iniciar (solo cuando idle) -->
+      <view
+        class="start-btn {{balance < cost ? 'disabled' : ''}}"
+        onTap="startGame"
+        a:if="{{phase === 'idle'}}"
+      >
+        <text class="start-btn-icon">🎁</text>
+        <text class="start-btn-text">Iniciar Juego · 10 TC</text>
+      </view>
+
+     
+
+      <!-- Panel resultado (cuando finished) -->
+      <view class="result-panel show" a:if="{{phase === 'finished'}}">
+        <!-- <text class="result-emoji">{{resultProfit >= 0 ? '✨' : '😢'}}</text>
+        <view class="result-body">
+          <text class="result-label">{{tierName ? '¡Llegaste a ' + tierName + '!' : 'Sin suerte esta vez'}}</text>
+          <text class="result-amount {{resultProfit >= 0 ? 'win' : 'lose'}}">
+            {{resultProfit >= 0 ? '+' + resultProfit + ' TC' : resultProfit + ' TC'}}
+          </text>
+        </view>-->
+        <view class="play-again-btn" onTap="resetGame">
+          <text class="play-again-text">Jugar de nuevo</text>
+        </view>
+      </view>
+
+    </view>
+
+  </view>
+</view>
