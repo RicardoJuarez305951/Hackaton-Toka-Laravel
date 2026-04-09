@@ -7,12 +7,12 @@ class PlinkoPhysicsService
     private const DT = 1 / 120;
     private const MAX_STEPS = 1800;
     private const SAMPLE_EVERY_STEPS = 4;
-    private const GRAVITY = 2400.0;
+    private const GRAVITY = 3200.0;
     private const RESTITUTION = 0.72;
     private const FRICTION = 0.06;
     private const BALL_RADIUS = 9.0;
     private const PEG_RADIUS = 6.0;
-    private const MAX_SPEED = 2600.0;
+    private const MAX_SPEED = 200.0;
 
     private const BOARD_WIDTH = 350.0;
     private const BOARD_HEIGHT = 350.0;
@@ -24,6 +24,9 @@ class PlinkoPhysicsService
     private const BOARD_ROW_SPACING = 40.0;
     private const BOARD_PEG_SPACING_X = 45.0;
     private const BOARD_SLOT_Y = 295.0;
+    private const PEG_BRANCH_LATERAL_IMPULSE = 24.0;
+    private const PEG_BRANCH_MIN_VX = 16.0;
+    private const PEG_BRANCH_NUDGE_X = 0.9;
 
     public function simulate(?int $seed = null): array
     {
@@ -35,7 +38,7 @@ class PlinkoPhysicsService
 
         $x = self::BOARD_START_X + $this->randomRange($rngState, -1.5, 1.5);
         $y = self::BOARD_START_Y;
-        $vx = $this->randomRange($rngState, -60.0, 60.0);
+        $vx = $this->randomRange($rngState, -4.0, 4.0);
         $vy = 0.0;
 
         $keyframes = [];
@@ -44,6 +47,7 @@ class PlinkoPhysicsService
         $legacyPositions = [$this->xToSlot($x, $board['width'], $board['slots'])];
         $rowsResolved = array_fill(0, $board['rows'], false);
         $lastHitByPeg = [];
+        $activeContacts = [];
 
         $slotIndex = $legacyPositions[0];
         $durationMs = 0;
@@ -77,6 +81,8 @@ class PlinkoPhysicsService
                 $this->addKeyframe($keyframes, $timeMs, $x, $y, 'wall', ['side' => 'right']);
             }
 
+            $currentContacts = [];
+
             foreach ($pegs as $peg) {
                 $dx = $x - $peg['x'];
                 $dy = $y - $peg['y'];
@@ -87,6 +93,10 @@ class PlinkoPhysicsService
                 if ($distanceSq >= $minDistanceSq) {
                     continue;
                 }
+
+                $pegKey = $peg['row'].':'.$peg['col'];
+                $isNewContact = ! isset($activeContacts[$pegKey]);
+                $currentContacts[$pegKey] = true;
 
                 $distance = sqrt(max($distanceSq, 0.0001));
                 $nx = $dx / $distance;
@@ -110,7 +120,6 @@ class PlinkoPhysicsService
                     $vx += $this->randomRange($rngState, -12.0, 12.0);
                 }
 
-                $pegKey = $peg['row'].':'.$peg['col'];
                 $lastHitStep = $lastHitByPeg[$pegKey] ?? -100;
                 if (($step - $lastHitStep) >= 3) {
                     $lastHitByPeg[$pegKey] = $step;
@@ -119,7 +128,13 @@ class PlinkoPhysicsService
                         'col' => $peg['col'],
                     ]);
                 }
+
+                if ($isNewContact) {
+                    $this->applyPegBranchDecision($x, $vx, $rngState, $board);
+                }
             }
+
+            $activeContacts = $currentContacts;
 
             for ($row = 0; $row < $board['rows']; $row++) {
                 if ($rowsResolved[$row]) {
@@ -257,5 +272,21 @@ class PlinkoPhysicsService
         $random = $state / 2147483647;
 
         return $min + (($max - $min) * $random);
+    }
+
+    private function pickBranchDirection(int &$state): int
+    {
+        return $this->randomRange($state, 0.0, 1.0) < 0.5 ? -1 : 1;
+    }
+
+    private function applyPegBranchDecision(float &$x, float &$vx, int &$state, array $board): void
+    {
+        $direction = $this->pickBranchDirection($state);
+        $vx += $direction * self::PEG_BRANCH_LATERAL_IMPULSE;
+        if (($vx * $direction) < self::PEG_BRANCH_MIN_VX) {
+            $vx = $direction * self::PEG_BRANCH_MIN_VX;
+        }
+        $x += $direction * self::PEG_BRANCH_NUDGE_X;
+        $x = max(self::BALL_RADIUS, min($board['width'] - self::BALL_RADIUS, $x));
     }
 }

@@ -1,0 +1,136 @@
+<view class="container">
+  <view class="header">
+    <view class="title-row">
+      <text class="title">TokaCoins</text>
+    </view>
+    <view class="balance">
+      <text class="coin-icon">🪙</text>
+      <text class="balance-amount">{{balance}} TC</text>
+    </view>
+  </view>
+
+  <view class="current-balance">
+    <text class="balance-label">Tu saldo actual</text>
+    <text class="balance-value">{{balance}} TC</text>
+  </view>
+
+  <view class="packages-section">
+    <text class="section-title">PAQUETES DISPONIBLES</text>
+    <view class="packages-grid">
+      <view class="package-card" onTap="selectPackage" data-price="100" data-cost="1.99">
+        <view class="package-icon">🪙</view>
+        <text class="package-amount">100</text>
+        <text class="package-name">TokaCoins</text>
+        <text class="package-cost">$1.99</text>
+      </view>
+      <view class="package-card" onTap="selectPackage" data-price="500" data-cost="8.99">
+        <view class="package-icon">💰</view>
+        <text class="package-amount">500</text>
+        <text class="package-name">TokaCoins</text>
+        <text class="package-cost">$8.99</text>
+        <view class="badge">Popular</view>
+      </view>
+      <view class="package-card" onTap="selectPackage" data-price="1000" data-cost="15.99">
+        <view class="package-icon">💎</view>
+        <text class="package-amount">1000</text>
+        <text class="package-name">TokaCoins</text>
+        <text class="package-cost">$15.99</text>
+        <view class="badge best">Mejor valor</view>
+      </view>
+      <view class="package-card" onTap="selectPackage" data-price="2500" data-cost="34.99">
+        <view class="package-icon">🏆</view>
+        <text class="package-amount">2500</text>
+        <text class="package-name">TokaCoins</text>
+        <text class="package-cost">$34.99</text>
+      </view>
+      <view class="package-card" onTap="selectPackage" data-price="5000" data-cost="64.99">
+        <view class="package-icon">👑</view>
+        <text class="package-amount">5000</text>
+        <text class="package-name">TokaCoins</text>
+        <text class="package-cost">$64.99</text>
+      </view>
+      <view class="package-card" onTap="selectPackage" data-price="10000" data-cost="119.99">
+        <view class="package-icon">🚀</view>
+        <text class="package-amount">10000</text>
+        <text class="package-name">TokaCoins</text>
+        <text class="package-cost">$119.99</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="info-section">
+    <text class="section-title">MÉTODOS DE PAGO</text>
+    <view class="info-list">
+      <view class="info-item">
+        <text class="info-icon">💳</text>
+        <view class="info-text">
+          <text class="info-title">Tarjeta de crédito / débito</text>
+          <text class="info-desc">Visa, Mastercard, Amex</text>
+        </view>
+        <text class="info-tag">Disponible</text>
+      </view>
+     
+      <view class="info-item">
+        <text class="info-icon">₿</text>
+        <view class="info-text">
+          <text class="info-title">Criptomonedas</text>
+          <text class="info-desc">BTC, ETH, USDT</text>
+        </view>
+        <text class="info-tag">Disponible</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="info-section">
+    <text class="section-title">BONOS DISPONIBLES</text>
+    <view class="info-list">
+      <view class="info-item">
+        <text class="info-icon">🎁</text>
+        <view class="info-text">
+          <text class="info-title">Bono de bienvenida</text>
+          <text class="info-desc">20% extra en tu primer depósito</text>
+        </view>
+        <text class="info-tag info-tag-green">+20%</text>
+      </view>
+      <view class="info-item">
+        <text class="info-icon">⭐</text>
+        <view class="info-text">
+          <text class="info-title">Bono de fin de semana</text>
+          <text class="info-desc">Sábados y domingos</text>
+        </view>
+        <text class="info-tag info-tag-green">+10%</text>
+      </view>
+      <view class="info-item">
+        <text class="info-icon">🔥</text>
+        <view class="info-text">
+          <text class="info-title">Bono por recarga frecuente</text>
+          <text class="info-desc">A partir del 3er depósito del mes</text>
+        </view>
+        <text class="info-tag info-tag-green">+15%</text>
+      </view>
+      <view class="info-item">
+        <text class="info-icon">👑</text>
+        <view class="info-text">
+          <text class="info-title">Bono VIP</text>
+          <text class="info-desc">Exclusivo para miembros con racha mayor 100</text>
+        </view>
+        <text class="info-tag info-tag-gold">+30%</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="navbar">
+    <view class="nav-item" onTap="navigateTo" data-page="games">
+      <text class="nav-icon">🎮</text>
+      <text class="nav-text">Juegos</text>
+    </view>
+    <view class="nav-item active" onTap="navigateTo" data-page="tokapoints">
+      <text class="nav-icon">💰</text>
+      <text class="nav-text">TokaCoins</text>
+    </view>
+    <view class="nav-item" onTap="navigateTo" data-page="premios">
+      <text class="nav-icon">🎁</text>
+      <text class="nav-text">Premios</text>
+    </view>
+  </view>
+</view>

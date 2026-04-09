@@ -1,0 +1,74 @@
+<view class="container">
+  <view class="content">
+    <view class="header">
+      <view class="logo-area">
+        <text class="logo">💎</text>
+        <text class="title">TitanDev</text>
+      </view>
+      <text class="subtitle">Tu experiencia de juegos comienza aquí</text>
+    </view>
+
+    <view class="balance-card">
+      <view class="balance-header">
+        <text class="balance-label">TU SALDO</text>
+        <text class="balance-icon">🪙</text>
+      </view>
+      <text class="balance-amount">{{balance}} TP</text>
+      <view class="balance-actions">
+        <view class="action-btn">
+          <text class="action-icon">➕</text>
+          <text class="action-text">Agregar</text>
+        </view>
+        <view class="action-btn">
+          <text class="action-icon">💸</text>
+          <text class="action-text">Retirar</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="quick-play">
+      <text class="section-title">JUEGA AHORA</text>
+      <view class="play-card" onTap="goToGame" data-game="plinko">
+        <view class="play-info">
+          <text class="play-name">Plinko</text>
+          <text class="play-desc">Hasta 25x de multiplicador</text>
+        </view>
+        <view class="play-btn-small">JUGAR</view>
+      </view>
+    </view>
+
+    <view class="stats-grid">
+      <view class="stat-box">
+        <text class="stat-value">{{gamesPlayed}}</text>
+        <text class="stat-label">Partidas</text>
+      </view>
+      <view class="stat-box win">
+        <text class="stat-value">{{winRate}}%</text>
+        <text class="stat-label">Victorias</text>
+      </view>
+      <view class="stat-box">
+        <text class="stat-value">{{maxWin}}</text>
+        <text class="stat-label">Mejor premio</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="navbar">
+    <view class="nav-item active" onTap="navigateTo" data-page="index">
+      <text class="nav-icon">🏠</text>
+      <text class="nav-text">Inicio</text>
+    </view>
+    <view class="nav-item" onTap="navigateTo" data-page="games">
+      <text class="nav-icon">🎮</text>
+      <text class="nav-text">Juegos</text>
+    </view>
+    <view class="nav-item" onTap="navigateTo" data-page="tokapoints">
+      <text class="nav-icon">💰</text>
+      <text class="nav-text">TokaCoins</text>
+    </view>
+    <view class="nav-item" onTap="navigateTo" data-page="premios">
+      <text class="nav-icon">🎁</text>
+      <text class="nav-text">Premios</text>
+    </view>
+  </view>
+</view>

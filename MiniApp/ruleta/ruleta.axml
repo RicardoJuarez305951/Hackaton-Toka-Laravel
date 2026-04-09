@@ -1,0 +1,44 @@
+<view class="container">
+  <view class="header">
+    <view class="title-row">
+      <text class="back-btn" onTap="goBack">←</text>
+      <text class="title">Ruleta</text>
+    </view>
+    <view class="balance">
+      <text class="coin-icon">🪙</text>
+      <text class="balance-amount">{{balance}} TP</text>
+    </view>
+  </view>
+
+  <view class="game-board">
+    <view class="slot-container">
+      <view class="slot-machine">
+        <view class="reel-wrapper">
+          <view class="reel {{spinning ? 'spinning' : ''}}" style="transform: translateY({{reelOffset}}rpx)">
+            <view class="reel-symbol" a:for="{{reelSymbols}}" a:key="index" style="background: {{item.color}};">
+              <text class="sym-text">{{item.text}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="slot-overlay top"></view>
+        <view class="slot-overlay bottom"></view>
+        <view class="slot-line"></view>
+      </view>
+      <view class="win-popup {{showResult ? 'show' : ''}}" style="background: {{resultSymbol.color || '#000'}}">
+        <text class="win-text">{{prizeAmount > 0 ? '+' : ''}}{{prizeAmount}} TP</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="controls">
+
+
+    <view class="spin-btn {{canSpin ? '' : 'disabled'}}" onTap="spinWheel">
+      <view class="spin-btn-shadow"></view>
+      <view class="spin-btn-front">
+        <text class="spin-icon">🎲</text>
+        <text class="spin-text">{{spinning ? 'GIRANDO...' : 'GIRAR'}}</text>
+      </view>
+    </view>
+  </view>
+</view>
