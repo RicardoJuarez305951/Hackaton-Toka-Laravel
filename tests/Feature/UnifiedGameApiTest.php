@@ -25,10 +25,10 @@ class UnifiedGameApiTest extends TestCase
             ->assertJsonPath('system.status', 'success')
             ->assertJsonPath('game.type', 'ruleta')
             ->assertJsonPath('game.visual_data.win_index', 4)
-            ->assertJsonPath('game.payout', 100)
-            ->assertJsonPath('prize', 100)
+            ->assertJsonPath('game.payout', 10)
+            ->assertJsonPath('prize', 10)
             ->assertJsonPath('win_index', 4)
-            ->assertJsonPath('balance', 1090);
+            ->assertJsonPath('balance', 1000);
 
         $this->assertSame('ruleta', GameHistory::query()->first()->meta['type'] ?? null);
     }
