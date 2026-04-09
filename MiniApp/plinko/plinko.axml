@@ -43,7 +43,7 @@
 
   <view class="controls">
     <view class="play-btn {{canPlay ? '' : 'disabled'}}" onTap="playGame">
-      <text class="play-text">{{isPlaying ? 'Jugando...' : 'SOLTAR BOLA'}}</text>
+      <text class="play-text">{{isPlaying ? 'Jugando...' : 'Soltar Bola · 10 TC'}}</text>
     </view>
   </view>
 

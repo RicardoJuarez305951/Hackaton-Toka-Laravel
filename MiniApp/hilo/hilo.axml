@@ -16,7 +16,7 @@
       <text class="streak-label">Racha</text>
       <view class="streak-dots">
         <view class="streak-dot filled" a:for="{{streak}}" a:key="index"></view>
-        <view class="streak-dot" a:for="{{[1,2,3,4,5]}}" a:key="index" a:if="{{index >= streak}}"></view>
+        <view class="streak-dot" a:for="{{[1,2,3,4,5]}}"  a:if="{{index >= streak}}"></view>
       </view>
       <text class="streak-count">{{streak}}</text>
     </view>

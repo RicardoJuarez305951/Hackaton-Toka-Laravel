@@ -1,5 +1,5 @@
 const SYMBOLS = [
-  { text: '0', color: '#131313', value: 0 },
+  { text: '2', color: '#131313', value: 2 },
   { text: '10', color: '#51aa5f', value: 10 },
   { text: '20', color: '#80c2dc', value: 20 },
   { text: '50', color: '#3388c6', value: 50 },
@@ -50,7 +50,7 @@ Page({
       setTimeout(() => {
         const winIndex = Math.floor(Math.random() * SYMBOLS.length);
         const winSymbol = SYMBOLS[winIndex];
-        const symbolHeight = 320;
+        const symbolHeight = 240;
         
         // Pick element further down to ensure a long spin (set 3: indices 24-31)
         const winPosition = 24 + winIndex;

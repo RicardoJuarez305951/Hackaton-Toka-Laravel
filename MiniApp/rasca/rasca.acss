@@ -249,7 +249,7 @@ page {
 .chest-glow-legendary { filter: drop-shadow(0 0 60rpx rgba(255,215,0,1)); }
 
 /* Animaciones del cofre */
-.chest-wrap.bounce { animate: bounceChest 0.6s cubic-bezier(0.280, 0.840, 0.420, 1); }
+.chest-wrap.bounce { animation: bounceChest 0.6s cubic-bezier(0.280, 0.840, 0.420, 1); }
 .chest-wrap.fail-shake { animation: shakeFail 0.6s cubic-bezier(.36,.07,.19,.97) both; }
 
 @keyframes bounceChest {
@@ -380,7 +380,7 @@ page {
 }
 
 /* Botones principales */
-.start-btn, .surrender-btn {
+.start-btn {
   border-radius: 24rpx;
   padding: 36rpx;
   display: flex;
@@ -391,10 +391,9 @@ page {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.start-btn:active, .surrender-btn:active {
+.start-btn:active {
   transform: translateY(4rpx);
-  box-shadow: 0 4rpx 10rpx rgba(0,0,0,0.1);
-}
+  box-shadow: 0 4rpx 10rpx rgba(0,0,0,0.1);}
 
 .start-btn {
   background: linear-gradient(135deg, #1736C8 0%, #4F6BEB 100%);
@@ -421,16 +420,6 @@ page {
   filter: grayscale(1);
 }
 
-.surrender-btn {
-  background: #FFFFFF;
-  border: 3rpx solid #1736C8;
-}
-
-.surrender-text {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #1736C8;
-}
 
 /* Panel de Resultados */
 .result-panel {

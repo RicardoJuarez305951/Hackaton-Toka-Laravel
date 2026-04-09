@@ -7,13 +7,12 @@
         <view class="back-btn-wrap" onTap="goBack">
           <text class="back-arrow">←</text>
         </view>
-        <text class="header-title">Cofre del Destino</text>
+        <text class="header-title">Regalo del Destino</text>
         <view class="balance-chip">
           <text class="coin-icon">🪙</text>
           <text class="balance-amount">{{balance}} TC</text>
         </view>
       </view>
-      <text class="header-subtitle">Tocá el cofre y probá tu suerte</text>
     </view>
   </view>
 
@@ -24,7 +23,7 @@
     <view class="arena-card">
 
       <!-- Tier ladder (top) -->
-      <view class="tier-ladder">
+     <!--  <view class="tier-ladder">
         <view class="tier-pip {{currentTier >= 5 ? 'active legendary' : 'inactive'}}">
           <text class="pip-label">Legendario</text>
         </view>
@@ -40,7 +39,7 @@
         <view class="tier-pip {{currentTier >= 1 ? 'active common' : 'inactive'}}">
           <text class="pip-label">Común</text>
         </view>
-      </view>
+      </view>-->
 
       <!-- Arena del brillo -->
       <view class="chest-arena tier-bg-{{tierClass}}">
@@ -75,6 +74,7 @@
 
           <!-- Finished -->
           <view class="finish-status" a:if="{{phase === 'finished'}}">
+            <text class="result-emoji">{{resultProfit >= 0 ? '✨' : '😢'}}</text>
             <view class="final-tier-badge tier-badge-{{tierClass}}">
               <text class="final-tier-name">{{tierName || 'Sin suerte'}}</text>
             </view>
@@ -102,20 +102,17 @@
         <text class="start-btn-text">Iniciar Juego · 10 TC</text>
       </view>
 
-      <!-- Botón Rendirse (cuando playing) -->
-      <view class="surrender-btn" onTap="surrender" a:if="{{phase === 'playing'}}">
-        <text class="surrender-text">Cobrar Premio Actual</text>
-      </view>
+     
 
       <!-- Panel resultado (cuando finished) -->
       <view class="result-panel show" a:if="{{phase === 'finished'}}">
-        <text class="result-emoji">{{resultProfit >= 0 ? '✨' : '😢'}}</text>
+        <!-- <text class="result-emoji">{{resultProfit >= 0 ? '✨' : '😢'}}</text>
         <view class="result-body">
           <text class="result-label">{{tierName ? '¡Llegaste a ' + tierName + '!' : 'Sin suerte esta vez'}}</text>
           <text class="result-amount {{resultProfit >= 0 ? 'win' : 'lose'}}">
             {{resultProfit >= 0 ? '+' + resultProfit + ' TC' : resultProfit + ' TC'}}
           </text>
-        </view>
+        </view>-->
         <view class="play-again-btn" onTap="resetGame">
           <text class="play-again-text">Jugar de nuevo</text>
         </view>

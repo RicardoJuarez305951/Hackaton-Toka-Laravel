@@ -28,8 +28,8 @@
           <text class="game-icon">🧾</text>
         </view>
         <view class="game-info">
-          <text class="game-name">Raspadito</text>
-          <text class="game-desc">¡Rascas, descubres y ganas!</text>
+          <text class="game-name">Regalo del Destino</text>
+          <text class="game-desc">El destino tiene un regalo para ti</text>
         </view>
         <view class="game-arrow">→</view>
       </view>
