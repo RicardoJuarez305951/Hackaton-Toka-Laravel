@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -10,32 +11,22 @@ use Illuminate\Support\Facades\Validator;
 
 class PaymentController extends Controller
 {
+    private function getTokaConfig()
+    {
+        return [
+            'baseUrl' => config('services.toka.url'),
+            'appId' => config('services.toka.program_id'),
+            'merchantCode' => config('services.toka.merchant_code'),
+            'caBundle' => config('services.toka.ca_bundle'),
+        ];
+    }
+
     public function create(Request $request)
     {
-        $baseUrl = config('services.toka.url');
-        $appId = config('services.toka.program_id');
-        $caBundle = config('services.toka.ca_bundle');
-        $merchantCode = $request->header('Alipay-MerchantCode');
+        $config = $this->getTokaConfig();
 
-        if (! $baseUrl || ! $appId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Hubo un error al acceder al servicio de Toka.',
-            ], 500);
-        }
-
-        if (! $merchantCode || strlen($merchantCode) !== 5) {
-            return response()->json([
-                'success' => false,
-                'message' => 'El header Alipay-MerchantCode es requerido y debe tener 5 caracteres.',
-            ], 400);
-        }
-
-        if (strlen($appId) !== 16) {
-            return response()->json([
-                'success' => false,
-                'message' => 'La configuración de Toka no es válida.',
-            ], 500);
+        if (!$config['baseUrl'] || !$config['appId'] || !$config['merchantCode']) {
+            return response()->json(['success' => false, 'message' => 'Configuración de Toka incompleta.'], 500);
         }
 
         $validator = Validator::make($request->all(), [
@@ -46,150 +37,135 @@ class PaymentController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Los datos del pago no son válidos.',
-                'data' => [
-                    'errors' => $validator->errors(),
-                ],
-            ], 422);
+            return response()->json(['success' => false, 'message' => 'Datos inválidos.', 'errors' => $validator->errors()], 422);
         }
 
         try {
-            $endpoint = rtrim($baseUrl, '/').'/v1/payment/create';
-
+            $endpoint = rtrim($config['baseUrl'], '/') . '/v1/payment/create';
             $requestBuilder = Http::withHeaders([
-                'X-App-Id' => $appId,
-                'Alipay-MerchantCode' => $merchantCode,
+                'X-App-Id' => $config['appId'],
+                'Alipay-MerchantCode' => $config['merchantCode'],
                 'Accept' => 'application/json',
-            ])->timeout(30);
+            ])->withToken($request->bearerToken())->timeout(30);
 
-            if ($caBundle) {
-                $requestBuilder = $requestBuilder->withOptions([
-                    'verify' => $caBundle,
-                ]);
+            if ($config['caBundle']) {
+                $requestBuilder = $requestBuilder->withOptions(['verify' => $config['caBundle']]);
             }
 
-            $response = $requestBuilder->post($endpoint, [
-                'userId' => $request->input('userId'),
-                'orderTitle' => $request->input('orderTitle'),
-                'orderAmount' => [
-                    'value' => $request->input('orderAmount.value'),
-                    'currency' => $request->input('orderAmount.currency'),
-                ],
-            ]);
+            $response = $requestBuilder->post($endpoint, $request->only(['userId', 'orderTitle', 'orderAmount']));
 
-            if ($response->successful()) {
-                return response()->json($response->json(), 200);
-            }
-
-            return response()->json([
-                'success' => false,
-                'statusCode' => $response->status(),
-                'message' => 'Hubo un error al crear el pago con Toka.',
-                'data' => [
-                    'upstreamResponse' => $response->json() ?? (object) [],
-                ],
-            ], $response->status());
+            return response()->json($response->json(), $response->status());
         } catch (\Exception $e) {
-            Log::error('Toka Payment Create Error: '.$e->getMessage(), [
-                'endpoint' => $endpoint,
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error de comunicación con Toka.',
-                'debug' => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
+            Log::error('Toka Payment Create Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error de comunicación con Toka.'], 500);
         }
+    }
+
+    public function inquiry(Request $request)
+    {
+        $config = $this->getTokaConfig();
+        $paymentId = $request->input('paymentId');
+
+        if (!$paymentId) {
+            return response()->json(['success' => false, 'message' => 'paymentId es requerido.'], 422);
+        }
+
+        try {
+            $endpoint = rtrim($config['baseUrl'], '/') . '/v1/payment/inquiry';
+            $requestBuilder = Http::withHeaders([
+                'X-App-Id' => $config['appId'],
+                'Accept' => 'application/json',
+            ])->withToken($request->bearerToken())->timeout(30);
+
+            if ($config['caBundle']) {
+                $requestBuilder = $requestBuilder->withOptions(['verify' => $config['caBundle']]);
+            }
+
+            $response = $requestBuilder->post($endpoint, ['paymentId' => $paymentId]);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            Log::error('Toka Payment Inquiry Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error de comunicación con Toka.'], 500);
+        }
+    }
+
+    public function finalize(Request $request)
+    {
+        $paymentId = $request->input('paymentId');
+        $tokaUserId = $request->input('tokaUserId');
+
+        if (!$paymentId || !$tokaUserId) {
+            return response()->json(['success' => false, 'message' => 'Datos insuficientes para finalizar.'], 422);
+        }
+
+        // 1. Verificar el pago con Toka
+        $inquiryResponse = $this->inquiry($request);
+        $data = $inquiryResponse->getData(true);
+
+        if (!$inquiryResponse->isSuccessful() || !($data['success'] ?? false)) {
+            return response()->json(['success' => false, 'message' => 'No se pudo verificar el pago.'], 400);
+        }
+
+        $paymentStatus = $data['data']['paymentStatus'] ?? '';
+
+        if ($paymentStatus !== 'SUCCESS') {
+            return response()->json(['success' => false, 'message' => 'El pago no ha sido completado. Estado: ' . $paymentStatus], 400);
+        }
+
+        // 2. Si es exitoso, sumar monedas al usuario
+        $user = User::where('toka_id', $tokaUserId)->first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Usuario no encontrado en base local.'], 404);
+        }
+
+        $amount = $data['data']['paymentAmount'] ?? 0;
+        // Asumiendo conversión de 10 TC por cada 1 MXN (ajustar según necesidad)
+        $coinsToAdd = (int)($amount * 10);
+
+        $user->coins += $coinsToAdd;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => "¡Pago verificado! Se han añadido {$coinsToAdd} TokaCoins.",
+            'new_balance' => $user->coins
+        ]);
     }
 
     public function close(Request $request)
     {
-        $baseUrl = config('services.toka.url');
-        $appId = config('services.toka.program_id');
-        $caBundle = config('services.toka.ca_bundle');
-        $merchantCode = $request->header('Alipay-MerchantCode');
-
-        if (! $baseUrl || ! $appId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Hubo un error al acceder al servicio de Toka.',
-            ], 500);
-        }
-
-        if (! $merchantCode || strlen($merchantCode) !== 5) {
-            return response()->json([
-                'success' => false,
-                'message' => 'El header Alipay-MerchantCode es requerido y debe tener 5 caracteres.',
-            ], 400);
-        }
-
-        if (strlen($appId) !== 16) {
-            return response()->json([
-                'success' => false,
-                'message' => 'La configuración de Toka no es válida.',
-            ], 500);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'paymentId' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'El paymentId es requerido y debe ser un texto válido.',
-                'data' => [
-                    'errors' => $validator->errors(),
-                ],
-            ], 422);
-        }
+        $config = $this->getTokaConfig();
+        $paymentId = $request->input('paymentId');
 
         try {
-            $endpoint = rtrim($baseUrl, '/').'/v1/payment/close';
-
-            $requestBuilder = Http::withHeaders([
-                'X-App-Id' => $appId,
-                'Alipay-MerchantCode' => $merchantCode,
+            $endpoint = rtrim($config['baseUrl'], '/') . '/v1/payment/close';
+            $response = Http::withHeaders([
+                'X-App-Id' => $config['appId'],
                 'Accept' => 'application/json',
-            ])->timeout(30);
+            ])->withToken($request->bearerToken())->post($endpoint, ['paymentId' => $paymentId]);
 
-            if ($caBundle) {
-                $requestBuilder = $requestBuilder->withOptions([
-                    'verify' => $caBundle,
-                ]);
-            }
-
-            $response = $requestBuilder->post($endpoint, [
-                'paymentId' => $request->input('paymentId'),
-            ]);
-
-            if ($response->successful()) {
-                return response()->json($response->json(), 200);
-            }
-
-            return response()->json([
-                'success' => false,
-                'statusCode' => $response->status(),
-                'message' => 'Hubo un error al cerrar el pago con Toka.',
-                'data' => [
-                    'upstreamResponse' => $response->json() ?? (object) [],
-                ],
-            ], $response->status());
-        } catch (\Exception $e) {
-            Log::error('Toka Payment Close Error: '.$e->getMessage(), [
-                'endpoint' => $endpoint,
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error de comunicación con Toka.',
-                'debug' => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception) {
+            return response()->json(['success' => false, 'message' => 'Error al cerrar pago.'], 500);
         }
+    }
 
+    public function refund(Request $request)
+    {
+        $config = $this->getTokaConfig();
+        try {
+            $endpoint = rtrim($config['baseUrl'], '/') . '/v1/payment/refund';
+            $response = Http::withHeaders([
+                'X-App-Id' => $config['appId'],
+                'Alipay-MerchantCode' => $config['merchantCode'],
+                'Accept' => 'application/json',
+            ])->withToken($request->bearerToken())->post($endpoint, $request->all());
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception) {
+            return response()->json(['success' => false, 'message' => 'Error al procesar reembolso.'], 500);
+        }
     }
 }
+

@@ -19,6 +19,9 @@ Route::prefix('auth')->group(function () {
 Route::prefix('payment')->group(function () {
     Route::post('/create', [PaymentController::class, 'create']);
     Route::post('/close', [PaymentController::class, 'close']);
+    Route::post('/inquiry', [PaymentController::class, 'inquiry']);
+    Route::post('/finalize', [PaymentController::class, 'finalize']);
+    Route::post('/refund', [PaymentController::class, 'refund']);
 });
 
 Route::prefix('user/{userId}')->group(function () {
