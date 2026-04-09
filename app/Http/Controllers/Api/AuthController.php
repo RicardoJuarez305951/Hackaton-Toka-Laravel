@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -15,8 +15,9 @@ class AuthController extends Controller
     {
         $baseUrl = config('services.toka.url');
         $appId = config('services.toka.program_id');
+        $caBundle = config('services.toka.ca_bundle');
 
-        if (!$baseUrl || !$appId) {
+        if (! $baseUrl || ! $appId) {
             return response()->json([
                 'success' => false,
                 'message' => 'Hubo un error al acceder al servicio de Toka.',
@@ -39,14 +40,22 @@ class AuthController extends Controller
         try {
             $endpoint = rtrim($baseUrl, '/').'/v1/user/authenticate';
 
-            $response = Http::withHeaders([
+            $requestBuilder = Http::withHeaders([
                 'X-App-Id' => $appId,
-                'Accept'   => 'application/json',
-            ])->post($endpoint, [
+                'Accept' => 'application/json',
+            ])->timeout(30);
+
+            if ($caBundle) {
+                $requestBuilder = $requestBuilder->withOptions([
+                    'verify' => $caBundle,
+                ]);
+            }
+
+            $response = $requestBuilder->post($endpoint, [
                 'authcode' => $request->input('authcode'),
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return response()->json([
                     'success' => false,
                     'statusCode' => $response->status(),
@@ -58,7 +67,7 @@ class AuthController extends Controller
             $tokaData = $response->json('data');
             $tokaUserId = $tokaData['userId'] ?? null;
 
-            if (!$tokaUserId) {
+            if (! $tokaUserId) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se recibió un userId válido de Toka.',
@@ -80,11 +89,16 @@ class AuthController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Toka Auth Error: '.$e->getMessage(), [
+                'endpoint' => $endpoint,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error de comunicación con Toka.',
+                'debug' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
-            report($e);
         }
     }
 }
