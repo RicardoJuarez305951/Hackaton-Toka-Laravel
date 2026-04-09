@@ -6,8 +6,8 @@ class RascaSimulationService
 {
     public const LEVELS = [
         ['probability' => 100, 'raw_payout' => 5, 'name' => 'common'],
-        ['probability' => 60, 'raw_payout' => 10, 'name' => 'uncommon'],
-        ['probability' => 15, 'raw_payout' => 20, 'name' => 'rare'],
+        ['probability' => 66, 'raw_payout' => 10, 'name' => 'uncommon'],
+        ['probability' => 16, 'raw_payout' => 20, 'name' => 'rare'],
         ['probability' => 4, 'raw_payout' => 50, 'name' => 'epic'],
         ['probability' => 1, 'raw_payout' => 200, 'name' => 'legendary'],
     ];

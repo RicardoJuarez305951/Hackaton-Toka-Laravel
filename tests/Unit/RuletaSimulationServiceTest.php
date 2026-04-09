@@ -20,8 +20,8 @@ class RuletaSimulationServiceTest extends TestCase
         $result = $service->simulate(4);
 
         $this->assertSame(4, $result['win_index']);
-        $this->assertSame(9, $result['raw_payout']);
-        $this->assertSame(0.9, $result['multiplier']);
+        $this->assertSame(10, $result['raw_payout']);
+        $this->assertSame(1.0, $result['multiplier']);
         $this->assertSame('#dd6860', $result['result_color']);
     }
 

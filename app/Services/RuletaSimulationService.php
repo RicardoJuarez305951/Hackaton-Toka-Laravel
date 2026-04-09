@@ -4,7 +4,7 @@ namespace App\Services;
 
 class RuletaSimulationService
 {
-    public const RAW_PAYOUTS = [0, 2, 5, 7, 9, 10, 15, 24];
+    public const RAW_PAYOUTS = [0, 2, 5, 8, 10, 12, 15, 24];
 
     public const SEGMENT_COLORS = ['#131313', '#51aa5f', '#80c2dc', '#3388c6', '#dd6860', '#e37d6b', '#22345a', '#c29706'];
 

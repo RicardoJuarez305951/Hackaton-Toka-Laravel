@@ -26,9 +26,9 @@ class RuletaSimulationReportServiceTest extends TestCase
             ['win_index' => 0, 'raw_payout' => 0, 'multiplier' => 0.0, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 0],
             ['win_index' => 1, 'raw_payout' => 2, 'multiplier' => 0.2, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 2],
             ['win_index' => 2, 'raw_payout' => 5, 'multiplier' => 0.5, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 5],
-            ['win_index' => 3, 'raw_payout' => 7, 'multiplier' => 0.7, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 7],
-            ['win_index' => 4, 'raw_payout' => 9, 'multiplier' => 0.9, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 9],
-            ['win_index' => 5, 'raw_payout' => 10, 'multiplier' => 1.0, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 10],
+            ['win_index' => 3, 'raw_payout' => 8, 'multiplier' => 0.8, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 8],
+            ['win_index' => 4, 'raw_payout' => 10, 'multiplier' => 1.0, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 10],
+            ['win_index' => 5, 'raw_payout' => 12, 'multiplier' => 1.2, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 12],
             ['win_index' => 6, 'raw_payout' => 15, 'multiplier' => 1.5, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 15],
             ['win_index' => 7, 'raw_payout' => 24, 'multiplier' => 2.4, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 24],
         ], $report['segments']);
@@ -37,9 +37,9 @@ class RuletaSimulationReportServiceTest extends TestCase
             'total_plays' => 8,
             'total_bet' => 10,
             'total_wagered' => 80,
-            'total_prize' => 72,
-            'net_result' => -8,
-            'rtp' => 90.0,
+            'total_prize' => 76,
+            'net_result' => -4,
+            'rtp' => 95.0,
         ], $report['summary']);
     }
 

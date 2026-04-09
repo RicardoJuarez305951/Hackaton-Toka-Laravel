@@ -134,7 +134,7 @@
             <a href="/plinko" class="game-card">
                 <div class="game-info">
                     <h3>Plinko</h3>
-                    <p>Hasta 4.5x de multiplicador</p>
+                    <p>Hasta 4.2x de multiplicador</p>
                 </div>
                 <div class="game-icon">🎯</div>
             </a>
@@ -142,7 +142,7 @@
             <a href="/rasca" class="game-card">
                 <div class="game-info">
                     <h3>Rasca y Gana</h3>
-                    <p>Hasta 5x de multiplicador</p>
+                    <p>Hasta 20x de multiplicador</p>
                 </div>
                 <div class="game-icon">🎫</div>
             </a>
@@ -150,7 +150,7 @@
             <a href="/ruleta" class="game-card">
                 <div class="game-info">
                     <h3>Ruleta</h3>
-                    <p>Hasta 100x de multiplicador</p>
+                    <p>Hasta 2.4x de multiplicador</p>
                 </div>
                 <div class="game-icon">🎰</div>
             </a>

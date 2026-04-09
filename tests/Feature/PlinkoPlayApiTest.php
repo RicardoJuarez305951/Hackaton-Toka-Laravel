@@ -43,13 +43,13 @@ class PlinkoPlayApiTest extends TestCase
             ->assertJsonPath('game.type', 'plinko')
             ->assertJsonPath('game.visual_data.final_slot', 6)
             ->assertJsonPath('game.visual_data.path.0', 1)
-            ->assertJsonPath('prize', 45)
-            ->assertJsonPath('balance', 1035);
+            ->assertJsonPath('prize', 42)
+            ->assertJsonPath('balance', 1032);
 
         $payload = $response->json();
         $this->assertSame([1, 1, 1, 1, 1, 1], $payload['game']['visual_data']['path']);
-        $this->assertSame(45, $payload['game']['payout']);
-        $this->assertSame(35, $payload['user']['diff']);
+        $this->assertSame(42, $payload['game']['payout']);
+        $this->assertSame(32, $payload['user']['diff']);
         $this->assertSame(6, $payload['slot_index']);
         $this->assertSame(6, $payload['spline']['final_slot']);
         $this->assertCount(6, $payload['spline']['path']);

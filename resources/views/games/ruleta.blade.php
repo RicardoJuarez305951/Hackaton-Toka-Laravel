@@ -233,13 +233,13 @@
 
         const SYMBOLS = [
             { text: '0', color: '#131313', value: 0 },
-            { text: '10', color: '#51aa5f', value: 10 },
-            { text: '20', color: '#80c2dc', value: 20 },
-            { text: '50', color: '#3388c6', value: 50 },
-            { text: '100', color: '#dd6860', value: 100 },
-            { text: '200', color: '#e37d6b', value: 200 },
-            { text: '500', color: '#22345a', value: 500 },
-            { text: '1000', color: '#c29706', value: 1000 }
+            { text: '2', color: '#51aa5f', value: 2 },
+            { text: '5', color: '#80c2dc', value: 5 },
+            { text: '8', color: '#3388c6', value: 8 },
+            { text: '10', color: '#dd6860', value: 10 },
+            { text: '12', color: '#e37d6b', value: 12 },
+            { text: '15', color: '#22345a', value: 15 },
+            { text: '24', color: '#c29706', value: 24 }
         ];
 
         const SPIN_STATE = {
