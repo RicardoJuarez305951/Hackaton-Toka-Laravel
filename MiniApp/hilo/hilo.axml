@@ -1,0 +1,82 @@
+<view class="container">
+  <view class="header">
+    <view class="title-row">
+      <text class="back-btn" onTap="goBack">←</text>
+      <text class="title">Hi-Lo</text>
+    </view>
+    <view class="balance">
+      <text class="coin-icon">🪙</text>
+      <text class="balance-amount">{{balance}} TP</text>
+    </view>
+  </view>
+
+  <view class="game-area">
+    <!-- Streak indicator -->
+    <view class="streak-bar" a:if="{{isPlaying}}">
+      <text class="streak-label">Racha</text>
+      <view class="streak-dots">
+        <view class="streak-dot filled" a:for="{{streak}}" a:key="index"></view>
+        <view class="streak-dot" a:for="{{[1,2,3,4,5]}}" a:key="index" a:if="{{index >= streak}}"></view>
+      </view>
+      <text class="streak-count">{{streak}}</text>
+    </view>
+
+    <!-- Card display -->
+    <view class="card-area">
+      <view class="playing-card {{currentCard.color}} {{flipping ? 'flip' : ''}}" a:if="{{currentCard}}">
+        <text class="card-rank top">{{currentCard.rank}}</text>
+        <text class="card-suit-big">{{currentCard.suit}}</text>
+        <text class="card-rank bottom">{{currentCard.rank}}</text>
+      </view>
+
+      <view class="card-placeholder" a:if="{{!currentCard}}">
+        <text class="placeholder-text">🎴</text>
+        <text class="placeholder-hint">Compra una ronda</text>
+      </view>
+    </view>
+
+    <!-- Multiplier info -->
+    <view class="multiplier-panel" a:if="{{isPlaying}}">
+      <view class="mult-row">
+        <text class="mult-label">Acumulado:</text>
+        <text class="mult-value">{{potentialWin}} TP</text>
+      </view>
+      <view class="mult-row sub">
+        <text class="mult-label">Multiplicador:</text>
+        <text class="mult-value">x{{currentMultiplier}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Action buttons -->
+  <view class="actions" a:if="{{isPlaying && !flipping}}">
+    <view class="guess-btn lower {{canLower ? '' : 'disabled'}}" onTap="guess" data-direction="lower">
+      <text class="guess-arrow">↓</text>
+      <text class="guess-label">MENOR</text>
+      <text class="guess-mult" a:if="{{canLower}}">x{{lowerMult}}</text>
+    </view>
+
+    <view class="cashout-btn {{streak >= 1 ? '' : 'disabled'}}" onTap="cashOut">
+      <text class="cashout-amount">{{potentialWin}} TP</text>
+      <text class="cashout-label">RETIRAR</text>
+    </view>
+
+    <view class="guess-btn higher {{canHigher ? '' : 'disabled'}}" onTap="guess" data-direction="higher">
+      <text class="guess-arrow">↑</text>
+      <text class="guess-label">MAYOR</text>
+      <text class="guess-mult" a:if="{{canHigher}}">x{{higherMult}}</text>
+    </view>
+  </view>
+
+  <!-- Start / Result -->
+  <view class="controls" a:if="{{!isPlaying}}">
+    <view class="start-btn" onTap="startGame">
+      <text class="start-text">JUGAR (10 TP)</text>
+    </view>
+
+    <view class="result-panel {{showResult ? 'show' : ''}}">
+      <text class="result-emoji">{{resultWin ? '🎉' : '💔'}}</text>
+      <text class="result-msg {{resultWin ? 'win' : 'lose'}}">{{resultMessage}}</text>
+    </view>
+  </view>
+</view>

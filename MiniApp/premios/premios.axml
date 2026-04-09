@@ -1,0 +1,84 @@
+<view class="container">
+  <view class="header">
+    <view class="title-row">
+      <text class="title">Premios</text>
+    </view>
+    <view class="balance">
+      <text class="coin-icon">🪙</text>
+      <text class="balance-amount">{{balance}} TP</text>
+    </view>
+  </view>
+
+  <view class="points-display">
+    <text class="points-label">Tus TokaCoins</text>
+    <text class="points-value">{{balance}} TP</text>
+  </view>
+
+  <view class="rewards-section">
+    <text class="section-title">CANJEA TUS PREMIOS</text>
+    <view class="rewards-grid">
+      <view class="reward-card">
+        <text class="reward-icon">🎫</text>
+        <text class="reward-name">Cupón $5</text>
+        <text class="reward-cost">500 TP</text>
+        <view class="redeem-btn" onTap="redeem" data-cost="500">Canjear</view>
+      </view>
+      <view class="reward-card">
+        <text class="reward-icon">🎁</text>
+        <text class="reward-name">Caja Sorpresa</text>
+        <text class="reward-cost">800 TP</text>
+        <view class="redeem-btn" onTap="redeem" data-cost="800">Canjear</view>
+      </view>
+      <view class="reward-card">
+        <text class="reward-icon">👕</text>
+        <text class="reward-name">Camiseta Oficial</text>
+        <text class="reward-cost">2000 TP</text>
+        <view class="redeem-btn" onTap="redeem" data-cost="2000">Canjear</view>
+      </view>
+      <view class="reward-card">
+        <text class="reward-icon">🎧</text>
+        <text class="reward-name">Audífonos</text>
+        <text class="reward-cost">5000 TP</text>
+        <view class="redeem-btn" onTap="redeem" data-cost="5000">Canjear</view>
+      </view>
+      <view class="reward-card">
+        <text class="reward-icon">📱</text>
+        <text class="reward-name">iPhone 15</text>
+        <text class="reward-cost">50000 TP</text>
+        <view class="redeem-btn" onTap="redeem" data-cost="50000">Canjear</view>
+      </view>
+      <view class="reward-card">
+        <text class="reward-icon">🚗</text>
+        <text class="reward-name">Auto Sport</text>
+        <text class="reward-cost">100000 TP</text>
+        <view class="redeem-btn" onTap="redeem" data-cost="100000">Canjear</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="history-section">
+    <text class="section-title">HISTORIAL DE CANJES</text>
+    <view class="history-list">
+      <view class="history-item">
+        <text class="history-icon">🎫</text>
+        <text class="history-name">Cupón $5</text>
+        <text class="history-date">Hoy</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="navbar">
+    <view class="nav-item" onTap="navigateTo" data-page="games">
+      <text class="nav-icon">🎮</text>
+      <text class="nav-text">Juegos</text>
+    </view>
+    <view class="nav-item" onTap="navigateTo" data-page="tokapoints">
+      <text class="nav-icon">💰</text>
+      <text class="nav-text">TokaCoins</text>
+    </view>
+    <view class="nav-item active" onTap="navigateTo" data-page="premios">
+      <text class="nav-icon">🎁</text>
+      <text class="nav-text">Premios</text>
+    </view>
+  </view>
+</view>
