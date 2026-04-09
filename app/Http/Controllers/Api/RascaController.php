@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\GamePlayService;
 use App\Services\GameResponseFactory;
-use App\Services\SecureRandomService;
+use App\Services\RascaSimulationService;
 use App\Services\TransactionIdFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,19 +14,11 @@ use Illuminate\Support\Facades\Validator;
 
 class RascaController extends Controller
 {
-    private const LEVELS = [
-        ['probability' => 100, 'raw_payout' => 2, 'name' => 'common'],
-        ['probability' => 70, 'raw_payout' => 10, 'name' => 'uncommon'],
-        ['probability' => 40, 'raw_payout' => 25, 'name' => 'rare'],
-        ['probability' => 20, 'raw_payout' => 60, 'name' => 'epic'],
-        ['probability' => 10, 'raw_payout' => 200, 'name' => 'legendary'],
-    ];
-
     public function __construct(
         private readonly GamePlayService $gamePlayService,
         private readonly GameResponseFactory $responseFactory,
         private readonly TransactionIdFactory $transactionIdFactory,
-        private readonly SecureRandomService $random,
+        private readonly RascaSimulationService $rascaSimulationService,
     ) {
     }
 
@@ -62,32 +54,11 @@ class RascaController extends Controller
             $payload = $this->gamePlayService->withTransaction(function () use ($user, $bet, $game, $balanceBefore) {
                 $user->decrement('coins', $bet);
 
-                $steps = [];
-                $finalLevel = 0;
-                $rawPayout = 0;
-
-                foreach (self::LEVELS as $index => $level) {
-                    $roll = $this->random->int(1, 100);
-                    $passed = $roll <= $level['probability'];
-
-                    $steps[] = [
-                        'level' => $index + 1,
-                        'passed' => $passed,
-                        'raw_payout' => $level['raw_payout'],
-                        'probability' => $level['probability'],
-                        'roll' => $roll,
-                        'name' => $level['name'],
-                    ];
-
-                    if (! $passed) {
-                        break;
-                    }
-
-                    $finalLevel = $index + 1;
-                    $rawPayout = $level['raw_payout'];
-                }
-
-                $multiplier = $rawPayout / 10;
+                $simulation = $this->rascaSimulationService->simulate();
+                $steps = $simulation['steps'];
+                $finalLevel = (int) $simulation['final_level'];
+                $rawPayout = (int) $simulation['raw_payout'];
+                $multiplier = (float) $simulation['multiplier'];
                 $payout = (int) floor($bet * $multiplier);
 
                 if ($payout > 0) {
@@ -119,7 +90,7 @@ class RascaController extends Controller
                     'steps' => $steps,
                     'final_level' => $finalLevel,
                     'raw_payout' => $rawPayout,
-                    'prize_map' => array_map(fn (array $level) => $level['raw_payout'], self::LEVELS),
+                    'prize_map' => $simulation['prize_map'],
                 ];
 
                 return $this->responseFactory->success(
