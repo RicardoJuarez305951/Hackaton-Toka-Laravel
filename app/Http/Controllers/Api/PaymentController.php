@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class PaymentController extends Controller
@@ -13,6 +14,7 @@ class PaymentController extends Controller
     {
         $baseUrl = config('services.toka.url');
         $appId = config('services.toka.program_id');
+        $caBundle = config('services.toka.ca_bundle');
         $merchantCode = $request->header('Alipay-MerchantCode');
 
         if (! $baseUrl || ! $appId) {
@@ -56,11 +58,19 @@ class PaymentController extends Controller
         try {
             $endpoint = rtrim($baseUrl, '/').'/v1/payment/create';
 
-            $response = Http::withHeaders([
+            $requestBuilder = Http::withHeaders([
                 'X-App-Id' => $appId,
                 'Alipay-MerchantCode' => $merchantCode,
                 'Accept' => 'application/json',
-            ])->post($endpoint, [
+            ])->timeout(30);
+
+            if ($caBundle) {
+                $requestBuilder = $requestBuilder->withOptions([
+                    'verify' => $caBundle,
+                ]);
+            }
+
+            $response = $requestBuilder->post($endpoint, [
                 'userId' => $request->input('userId'),
                 'orderTitle' => $request->input('orderTitle'),
                 'orderAmount' => [
@@ -82,9 +92,15 @@ class PaymentController extends Controller
                 ],
             ], $response->status());
         } catch (\Exception $e) {
+            Log::error('Toka Payment Create Error: '.$e->getMessage(), [
+                'endpoint' => $endpoint,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error de comunicación con Toka.',
+                'debug' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
@@ -93,6 +109,7 @@ class PaymentController extends Controller
     {
         $baseUrl = config('services.toka.url');
         $appId = config('services.toka.program_id');
+        $caBundle = config('services.toka.ca_bundle');
         $merchantCode = $request->header('Alipay-MerchantCode');
 
         if (! $baseUrl || ! $appId) {
@@ -133,11 +150,19 @@ class PaymentController extends Controller
         try {
             $endpoint = rtrim($baseUrl, '/').'/v1/payment/close';
 
-            $response = Http::withHeaders([
+            $requestBuilder = Http::withHeaders([
                 'X-App-Id' => $appId,
                 'Alipay-MerchantCode' => $merchantCode,
                 'Accept' => 'application/json',
-            ])->post($endpoint, [
+            ])->timeout(30);
+
+            if ($caBundle) {
+                $requestBuilder = $requestBuilder->withOptions([
+                    'verify' => $caBundle,
+                ]);
+            }
+
+            $response = $requestBuilder->post($endpoint, [
                 'paymentId' => $request->input('paymentId'),
             ]);
 
@@ -154,9 +179,15 @@ class PaymentController extends Controller
                 ],
             ], $response->status());
         } catch (\Exception $e) {
+            Log::error('Toka Payment Close Error: '.$e->getMessage(), [
+                'endpoint' => $endpoint,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error de comunicación con Toka.',
+                'debug' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
 

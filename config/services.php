@@ -38,6 +38,7 @@ return [
     'toka' => [
         'url' => env('TOKA_BASE_URL'),
         'program_id' => env('TOKA_PROGRAM_ID'),
+        'ca_bundle' => env('TOKA_CA_BUNDLE'),
     ],
 
 ];
