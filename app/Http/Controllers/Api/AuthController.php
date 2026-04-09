@@ -84,6 +84,7 @@ class AuthController extends Controller
                 'success' => false,
                 'message' => 'Error de comunicación con Toka.',
             ], 500);
+            report($e);
         }
     }
 }
