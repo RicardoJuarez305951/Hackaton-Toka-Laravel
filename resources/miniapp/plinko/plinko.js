@@ -54,7 +54,7 @@ Page({
     showCoin: false,
     ballBouncing: false,
     history: [],
-    multipliers: [10, 3, 1, 0.5, 1, 3, 10],
+    multipliers: [4.5, 1.8, 0.8, 0.4, 0.8, 1.8, 4.5],
     pegs: buildPegs(),
   },
 
@@ -365,4 +365,3 @@ Page({
     tick();
   },
 });
-

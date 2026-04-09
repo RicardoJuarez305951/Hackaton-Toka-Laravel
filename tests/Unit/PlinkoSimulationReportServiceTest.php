@@ -31,21 +31,21 @@ class PlinkoSimulationReportServiceTest extends TestCase
         ]);
 
         $this->assertSame([
-            ['slot' => 0, 'multiplier' => 5, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 50],
-            ['slot' => 1, 'multiplier' => 2, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 20],
-            ['slot' => 2, 'multiplier' => 1, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 10],
-            ['slot' => 3, 'multiplier' => 0.5, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 5],
-            ['slot' => 4, 'multiplier' => 1, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 10],
-            ['slot' => 5, 'multiplier' => 2, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 20],
-            ['slot' => 6, 'multiplier' => 5, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 50],
+            ['slot' => 0, 'multiplier' => 4.5, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 45],
+            ['slot' => 1, 'multiplier' => 1.8, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 18],
+            ['slot' => 2, 'multiplier' => 0.8, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 8],
+            ['slot' => 3, 'multiplier' => 0.4, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 4],
+            ['slot' => 4, 'multiplier' => 0.8, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 8],
+            ['slot' => 5, 'multiplier' => 1.8, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 18],
+            ['slot' => 6, 'multiplier' => 4.5, 'plays' => 1, 'bet_total' => 10, 'prize_total' => 45],
         ], $report['slots']);
 
         $this->assertSame([
             'total_plays' => 7,
             'total_bet' => 10,
             'total_wagered' => 70,
-            'total_prize' => 165,
-            'net_result' => 95,
+            'total_prize' => 146,
+            'net_result' => 76,
         ], $report['summary']);
     }
 
