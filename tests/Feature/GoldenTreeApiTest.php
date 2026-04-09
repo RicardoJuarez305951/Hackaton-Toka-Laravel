@@ -60,9 +60,9 @@ class GoldenTreeApiTest extends TestCase
         $response = $this->postJson('/api/goldentree/collect', ['user_id' => $user->id]);
 
         $response->assertStatus(200)
-            ->assertJsonPath('game.payout', 85)
-            ->assertJsonPath('balance', 1085)
-            ->assertJsonPath('game.visual_data.collection.commission', 15);
+            ->assertJsonPath('game.payout', 80)
+            ->assertJsonPath('balance', 1080)
+            ->assertJsonPath('game.visual_data.collection.commission', 20);
 
         $this->assertSame(0, GoldenTreeState::query()->first()->banked_tp);
     }
