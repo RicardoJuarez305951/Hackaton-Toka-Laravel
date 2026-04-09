@@ -14,8 +14,8 @@ class PlinkoPhysicsService
     private const BOARD_START_Y = 20.0;
     private const BOARD_ROW_START_Y = 50.0;
     private const BOARD_ROW_SPACING = 40.0;
-    private const BOARD_STEP_X = 45.0;
-    private const BOARD_SLOT_Y = 295.0;
+    private const BOARD_STEP_X = 25.0;
+    private const BOARD_SLOT_Y = 320.0;
 
     public function __construct(private readonly SecureRandomService $random)
     {
