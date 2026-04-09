@@ -5,21 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class DebugController extends Controller
 {
-    private function resolveDemoUser(): User
-    {
-        return User::firstOrCreate(
-            ['email' => 'demo@toka.local'],
-            [
-                'name' => 'Demo Toka',
-                'password' => Hash::make('password123'),
-                'coins' => 1000,
-            ]
-        );
-    }
+    private const DEFAULT_WEB_BALANCE = 1000;
 
     public function addCoins(Request $request)
     {
@@ -44,11 +33,12 @@ class DebugController extends Controller
             'amount' => 'required|integer|min:1',
         ]);
 
-        $user = $this->resolveDemoUser();
-        $user->increment('coins', $request->amount);
+        $currentBalance = (int) $request->session()->get('web_demo_balance', self::DEFAULT_WEB_BALANCE);
+        $newBalance = $currentBalance + (int) $request->amount;
+        $request->session()->put('web_demo_balance', $newBalance);
 
         return redirect('/')->with([
-            'message' => "Se agregaron {$request->amount} coins. Nuevo balance: {$user->fresh()->coins} TP",
+            'message' => "Se agregaron {$request->amount} coins. Nuevo balance: {$newBalance} TP",
             'message_type' => 'success',
         ]);
     }
