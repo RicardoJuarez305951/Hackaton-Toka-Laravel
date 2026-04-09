@@ -23,7 +23,9 @@ Homestead.json
 .phpunit.result.cache
 
 /public/build
+/public/miniapp-web
 /storage/pail
+.miniapp-web-src/
 .env.backup
 .env.production
 .phpactor.json

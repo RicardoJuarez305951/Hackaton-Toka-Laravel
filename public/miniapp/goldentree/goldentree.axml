@@ -1,0 +1,164 @@
+<view class="container">
+  <view class="header">
+    <view class="title-row">
+      <text class="back-btn" onTap="goBack">←</text>
+      <text class="title">Árbol Dorado</text>
+    </view>
+    <view class="balance">
+      <text class="coin-icon">🪙</text>
+      <text class="balance-amount">{{balance}} TC</text>
+    </view>
+  </view>
+
+  <!-- Event Banner -->
+  <view class="event-banner" a:if="{{activeEvent}}" onTap="atenderEvento">
+    <view class="event-main-row">
+      <view class="event-icon-wrap">
+        <text class="event-emoji">{{activeEvent.emoji}}</text>
+      </view>
+      <view class="event-info">
+        <text class="event-name">{{activeEvent.name}}</text>
+        <text class="event-hint">Toca para: {{activeEvent.action}}</text>
+      </view>
+      <view class="event-action-btn">
+        <text class="event-action-text">RESOLVER</text>
+      </view>
+    </view>
+    <view class="event-timer-row">
+      <view class="event-timer-bar-bg">
+        <view class="event-timer-bar-fill {{eventTimer <= 15 ? 'urgent' : ''}}" style="width: {{(eventTimer / 60) * 100}}%"></view>
+      </view>
+      <text class="event-timer-text {{eventTimer <= 15 ? 'urgent' : ''}}">{{eventTimer}}s</text>
+    </view>
+  </view>
+
+  <!-- Tree Display -->
+  <view class="tree-area">
+    <!-- Ambient glow -->
+    <view class="ambient-glow stage-{{stage}}"></view>
+
+    <!-- Stage badge -->
+    <view class="stage-badge-row">
+      <view class="stage-badge">
+        <text class="stage-badge-text">Etapa {{stage + 1}} / 10</text>
+      </view>
+      <view class="gen-indicator {{generating ? 'active' : 'paused'}}">
+        <view class="gen-pulse"></view>
+        <text class="gen-text">{{generating ? '+' + stageRate + ' TC/30s' : (extraPauseSeconds > 0 ? 'PAUSA ' + extraPauseSeconds + 's' : 'PAUSADO')}}</text>
+      </view>
+    </view>
+
+    <!-- Tree Scene -->
+    <view class="tree-scene">
+      <!-- Particle sparkles (decorative) -->
+      <view class="sparkle sp1 stage-{{stage}}"></view>
+      <view class="sparkle sp2 stage-{{stage}}"></view>
+      <view class="sparkle sp3 stage-{{stage}}"></view>
+      <view class="sparkle sp4 stage-{{stage}}"></view>
+
+      <!-- Tree composed of triangles via borders + canopy circles -->
+      <view class="tree-wrapper stage-{{stage}}">
+
+        <!-- Stage 0: Seed -->
+        <view class="seed-wrap" a:if="{{stage === 0}}">
+          <text class="seed-emoji">🌰</text>
+          <text class="seed-label">Semilla</text>
+        </view>
+
+        <!-- Stage 1: Sprout -->
+        <view class="sprout-wrap" a:if="{{stage === 1}}">
+          <view class="sprout-leaves">
+            <view class="sprout-leaf left"></view>
+            <view class="sprout-leaf right"></view>
+          </view>
+          <view class="sprout-stem"></view>
+        </view>
+
+        <!-- Stage 2-6: Growing tree using triangles -->
+        <view class="grown-tree" a:if="{{stage >= 2 && stage <= 6}}">
+          <view class="tri-top stage-{{stage}}"></view>
+          <view class="tri-mid stage-{{stage}}" a:if="{{stage >= 3}}"></view>
+          <view class="tri-bot stage-{{stage}}" a:if="{{stage >= 4}}"></view>
+          <view class="trunk stage-{{stage}}"></view>
+        </view>
+
+        <!-- Stage 7-9: Golden/Mystic tree -->
+        <view class="golden-tree" a:if="{{stage >= 7}}">
+          <view class="gold-halo stage-{{stage}}"></view>
+          <view class="gold-tri-top stage-{{stage}}"></view>
+          <view class="gold-tri-mid stage-{{stage}}"></view>
+          <view class="gold-tri-bot stage-{{stage}}"></view>
+          <view class="gold-trunk stage-{{stage}}"></view>
+          <!-- Coin leaves for stage 9 -->
+          <view class="coin-leaf cl1" a:if="{{stage === 9}}">🪙</view>
+          <view class="coin-leaf cl2" a:if="{{stage === 9}}">🪙</view>
+          <view class="coin-leaf cl3" a:if="{{stage === 9}}">🪙</view>
+        </view>
+      </view>
+
+      <!-- Ground shadow -->
+      <view class="tree-ground stage-{{stage}}"></view>
+    </view>
+
+    <!-- Stage name -->
+    <view class="stage-name-row">
+      <text class="stage-name">{{stageName}}</text>
+    </view>
+
+    <!-- Progress bar -->
+    <view class="progress-section" a:if="{{!isMaxStage}}">
+      <view class="progress-header">
+        <text class="progress-next">Siguiente: {{nextStageName}}</text>
+        <text class="progress-time">{{timeToNext}}</text>
+      </view>
+      <view class="progress-bar-bg">
+        <view class="progress-bar-fill" style="width: {{progressPercent}}%">
+          <view class="progress-shine"></view>
+        </view>
+      </view>
+      <text class="progress-pct">{{progressPercent}}%</text>
+    </view>
+    <view class="max-badge" a:if="{{isMaxStage}}">
+      <text class="max-text">👑 NIVEL MÁXIMO</text>
+    </view>
+  </view>
+
+  <!-- Bank & Actions -->
+  <view class="bank-section">
+    <view class="bank-header">
+      <text class="bank-label">TC Generados</text>
+    </view>
+    <view class="bank-display">
+      <view class="bank-amount-block">
+        <text class="bank-amount">{{bankedTP}}</text>
+        <text class="bank-unit">TokaCoins</text>
+      </view>
+      <view class="cobrar-btn {{canCobrar ? '' : 'disabled'}}" onTap="cobrar">
+        <text class="cobrar-icon">💰</text>
+        <text class="cobrar-text">COBRAR</text>
+      </view>
+    </view>
+    <view class="commission-info" a:if="{{canCobrar}}">
+      <view class="commission-row">
+        <text class="commission-label">Recibirás</text>
+        <text class="commission-net">+{{netTP}} TC</text>
+      </view>
+      <view class="commission-row">
+        <text class="commission-label">Comisión (15%)</text>
+        <text class="commission-fee">−{{commissionTP}} TC</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Water Button -->
+  <view class="action-row">
+    <view class="regar-btn {{canRegar ? '' : 'disabled'}}" onTap="regar">
+      <text class="regar-emoji">💧</text>
+      <view class="regar-info">
+        <text class="regar-text">Regar el Árbol</text>
+        <text class="regar-hint">Cuesta 20 TC · +10 min crecimiento</text>
+      </view>
+    </view>
+  </view>
+
+</view>
