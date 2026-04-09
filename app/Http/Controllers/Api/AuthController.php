@@ -80,11 +80,11 @@ class AuthController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Error de comunicación con Toka.',
             ], 500);
-            report($e);
         }
     }
 }
