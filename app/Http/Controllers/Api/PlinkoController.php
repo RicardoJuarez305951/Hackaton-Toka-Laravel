@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Validator;
 
 class PlinkoController extends Controller
 {
-    private const MULTIPLIERS = [5, 2, 1, 0.5, 1, 2, 5];
-
     public function __construct(
         private readonly GamePlayService $gamePlayService,
         private readonly PlinkoPhysicsService $plinkoPhysicsService,
@@ -59,7 +57,7 @@ class PlinkoController extends Controller
                 $simulation = $this->plinkoPhysicsService->simulate();
                 $path = $simulation['path'];
                 $slotIndex = (int) $simulation['slot_index'];
-                $multiplier = (float) (self::MULTIPLIERS[$slotIndex] ?? 1);
+                $multiplier = (float) (PlinkoPhysicsService::SLOT_MULTIPLIERS[$slotIndex] ?? 1);
                 $payout = (int) floor($bet * $multiplier);
 
                 if ($payout > 0) {

@@ -134,7 +134,7 @@
             <a href="/plinko" class="game-card">
                 <div class="game-info">
                     <h3>Plinko</h3>
-                    <p>Hasta 10x de multiplicador</p>
+                    <p>Hasta 4.5x de multiplicador</p>
                 </div>
                 <div class="game-icon">🎯</div>
             </a>
