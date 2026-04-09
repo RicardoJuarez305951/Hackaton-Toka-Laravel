@@ -17,7 +17,7 @@ class AuthController extends Controller
         $appId = config('services.toka.program_id');
         $caBundle = config('services.toka.ca_bundle');
 
-        if (! $baseUrl || ! $appId) {
+        if (!$baseUrl || !$appId) {
             return response()->json([
                 'success' => false,
                 'message' => 'Hubo un error al acceder al servicio de Toka.',
@@ -38,7 +38,7 @@ class AuthController extends Controller
         }
 
         try {
-            $endpoint = rtrim($baseUrl, '/').'/v1/user/authenticate';
+            $endpoint = rtrim($baseUrl, '/') . '/v1/user/authenticate';
 
             $requestBuilder = Http::withHeaders([
                 'X-App-Id' => $appId,
@@ -55,7 +55,7 @@ class AuthController extends Controller
                 'authcode' => $request->input('authcode'),
             ]);
 
-            if (! $response->successful()) {
+            if (!$response->successful()) {
                 return response()->json([
                     'success' => false,
                     'statusCode' => $response->status(),
@@ -67,7 +67,7 @@ class AuthController extends Controller
             $tokaData = $response->json('data');
             $tokaUserId = $tokaData['userId'] ?? null;
 
-            if (! $tokaUserId) {
+            if (!$tokaUserId) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se recibió un userId válido de Toka.',
@@ -81,6 +81,9 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => true,
+                'accessToken' => $tokaData['accessToken'] ?? null,
+                'expiresIn' => $tokaData['expiresIn'] ?? null,
+                'userId' => $tokaUserId,
                 'user' => [
                     'id' => $user->id,
                     'toka_id' => $user->toka_id,
@@ -89,8 +92,77 @@ class AuthController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Toka Auth Error: '.$e->getMessage(), [
+            Log::error('Toka Auth Error: ' . $e->getMessage(), [
                 'endpoint' => $endpoint,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de comunicación con Toka.',
+                'debug' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function userInfo(Request $request)
+    {
+        $baseUrl = config('services.toka.url');
+        $appId = config('services.toka.program_id');
+        $caBundle = config('services.toka.ca_bundle');
+
+        if (!$baseUrl || !$appId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Configuración de Toka faltante.',
+            ], 500);
+        }
+
+        // Recuperar el Bearer token que manda el frontend
+        $token = $request->bearerToken();
+        
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se proporcionó un token de autorización.',
+            ], 401);
+        }
+
+        try {
+            $endpoint = rtrim($baseUrl, '/') . '/v1/user/info';
+
+            $requestBuilder = Http::withHeaders([
+                'X-App-Id' => $appId,
+                'Accept' => 'application/json',
+            ])->withToken($token)->timeout(30);
+
+            if ($caBundle) {
+                $requestBuilder = $requestBuilder->withOptions([
+                    'verify' => $caBundle,
+                ]);
+            }
+
+            // Forward the payload from the frontend to Toka, in case Toka requires parameters like userId
+            $payload = $request->all();
+
+            $response = $requestBuilder->post($endpoint, empty($payload) ? (object)[] : $payload);
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'statusCode' => $response->status(),
+                    'message' => 'Hubo un error al obtener la información en Toka.',
+                    'error_details' => $response->json(),
+                ], $response->status());
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $response->json('data'),
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Toka UserInfo Error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
 

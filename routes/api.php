@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
     Route::post('/authenticate', [AuthController::class, 'authenticate']);
+    Route::post('/info', [AuthController::class, 'userInfo']);
 });
 
 Route::prefix('payment')->group(function () {
