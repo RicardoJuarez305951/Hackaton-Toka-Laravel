@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\GamePlayService;
 use App\Services\GameResponseFactory;
-use App\Services\SecureRandomService;
+use App\Services\RuletaSimulationService;
 use App\Services\TransactionIdFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,14 +14,11 @@ use Illuminate\Support\Facades\Validator;
 
 class RuletaController extends Controller
 {
-    private const RAW_PAYOUTS = [0, 10, 20, 50, 100, 200, 500, 1000];
-    private const SEGMENT_COLORS = ['#131313', '#51aa5f', '#80c2dc', '#3388c6', '#dd6860', '#e37d6b', '#22345a', '#c29706'];
-
     public function __construct(
         private readonly GamePlayService $gamePlayService,
         private readonly GameResponseFactory $responseFactory,
         private readonly TransactionIdFactory $transactionIdFactory,
-        private readonly SecureRandomService $random,
+        private readonly RuletaSimulationService $ruletaSimulationService,
     ) {
     }
 
@@ -57,9 +54,10 @@ class RuletaController extends Controller
             $payload = $this->gamePlayService->withTransaction(function () use ($user, $bet, $game, $balanceBefore) {
                 $user->decrement('coins', $bet);
 
-                $winIndex = $this->random->int(0, count(self::RAW_PAYOUTS) - 1);
-                $rawPayout = self::RAW_PAYOUTS[$winIndex];
-                $multiplier = $rawPayout / 10;
+                $simulation = $this->ruletaSimulationService->simulate();
+                $winIndex = (int) $simulation['win_index'];
+                $rawPayout = (int) $simulation['raw_payout'];
+                $multiplier = (float) $simulation['multiplier'];
                 $payout = (int) floor($bet * $multiplier);
 
                 if ($payout > 0) {
@@ -80,7 +78,7 @@ class RuletaController extends Controller
                         'type' => 'ruleta',
                         'win_index' => $winIndex,
                         'raw_payout' => $rawPayout,
-                        'result_color' => self::SEGMENT_COLORS[$winIndex],
+                        'result_color' => $simulation['result_color'],
                     ],
                     'played_at' => now(),
                 ]);
@@ -90,7 +88,7 @@ class RuletaController extends Controller
                 $visualData = [
                     'win_index' => $winIndex,
                     'raw_payout' => $rawPayout,
-                    'result_color' => self::SEGMENT_COLORS[$winIndex],
+                    'result_color' => $simulation['result_color'],
                 ];
 
                 return $this->responseFactory->success(

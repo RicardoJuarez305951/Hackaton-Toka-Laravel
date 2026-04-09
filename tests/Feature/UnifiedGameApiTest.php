@@ -25,10 +25,10 @@ class UnifiedGameApiTest extends TestCase
             ->assertJsonPath('system.status', 'success')
             ->assertJsonPath('game.type', 'ruleta')
             ->assertJsonPath('game.visual_data.win_index', 4)
-            ->assertJsonPath('game.payout', 100)
-            ->assertJsonPath('prize', 100)
+            ->assertJsonPath('game.payout', 10)
+            ->assertJsonPath('prize', 10)
             ->assertJsonPath('win_index', 4)
-            ->assertJsonPath('balance', 1090);
+            ->assertJsonPath('balance', 1000);
 
         $this->assertSame('ruleta', GameHistory::query()->first()->meta['type'] ?? null);
     }
@@ -53,6 +53,13 @@ class UnifiedGameApiTest extends TestCase
         $this->assertCount(3, $payload['game']['visual_data']['steps']);
         $this->assertFalse($payload['game']['visual_data']['steps'][2]['passed']);
         $this->assertSame(0, $payload['user']['diff']);
+
+        $history = GameHistory::query()->first();
+        $this->assertNotNull($history);
+        $this->assertSame('rasca', $history->meta['type'] ?? null);
+        $this->assertSame(2, $history->meta['final_level'] ?? null);
+        $this->assertSame(10, $history->meta['raw_payout'] ?? null);
+        $this->assertCount(3, $history->meta['steps'] ?? []);
     }
 
     private function makeUser(string $email = 'user@example.com'): User

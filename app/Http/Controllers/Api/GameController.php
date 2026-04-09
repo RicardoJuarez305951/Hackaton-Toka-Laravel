@@ -36,11 +36,12 @@ class GameController extends Controller
             return response()->json(['success' => false, 'message' => 'Usuario no encontrado'], 404);
         }
 
-        $streak = $user->streak;
+        $multiplier = $this->gamePlayService->getMultiplier($user);
+        $streak = $user->fresh()->streak;
 
         return response()->json([
             'success' => true,
-            'multiplier' => $this->gamePlayService->getMultiplier($user),
+            'multiplier' => $multiplier,
             'streak_count' => $streak ? $streak->streak_count : 0,
             'last_played_at' => $streak ? $streak->last_played_at : null,
         ]);

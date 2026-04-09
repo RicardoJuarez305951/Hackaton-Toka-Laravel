@@ -6,7 +6,9 @@ use App\Models\HiloRound;
 
 class HiloService
 {
-    private const SUITS = [
+    public const HOUSE_EDGE_FACTOR = 0.90;
+
+    public const SUITS = [
         'spades' => ['symbol' => '?', 'color' => 'black'],
         'hearts' => ['symbol' => '?', 'color' => 'red'],
         'diamonds' => ['symbol' => '?', 'color' => 'red'],
@@ -56,13 +58,18 @@ class HiloService
 
     public function calculateDirectionMultiplier(int $rank, string $direction): float
     {
+        return $this->calculateDirectionMultiplierForHouseEdge($rank, $direction, self::HOUSE_EDGE_FACTOR);
+    }
+
+    public function calculateDirectionMultiplierForHouseEdge(int $rank, string $direction, float $houseEdgeFactor): float
+    {
         $winningCards = $this->countWinningCards($rank, $direction);
 
         if ($winningCards <= 0) {
             return 0.0;
         }
 
-        return round((12 / $winningCards) * 0.9, 2);
+        return round((12 / $winningCards) * $houseEdgeFactor, 2);
     }
 
     public function countWinningCards(int $rank, string $direction): int

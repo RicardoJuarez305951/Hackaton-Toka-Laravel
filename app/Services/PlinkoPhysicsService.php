@@ -4,6 +4,8 @@ namespace App\Services;
 
 class PlinkoPhysicsService
 {
+    public const SLOT_MULTIPLIERS = [4.2, 1.7, 0.8, 0.4, 0.8, 1.7, 4.2];
+
     private const BOARD_WIDTH = 350.0;
     private const BOARD_HEIGHT = 350.0;
     private const BOARD_ROWS = 6;
@@ -12,8 +14,8 @@ class PlinkoPhysicsService
     private const BOARD_START_Y = 20.0;
     private const BOARD_ROW_START_Y = 50.0;
     private const BOARD_ROW_SPACING = 40.0;
-    private const BOARD_STEP_X = 45.0;
-    private const BOARD_SLOT_Y = 295.0;
+    private const BOARD_STEP_X = 25.0;
+    private const BOARD_SLOT_Y = 320.0;
 
     public function __construct(private readonly SecureRandomService $random)
     {

@@ -43,13 +43,13 @@ class PlinkoPlayApiTest extends TestCase
             ->assertJsonPath('game.type', 'plinko')
             ->assertJsonPath('game.visual_data.final_slot', 6)
             ->assertJsonPath('game.visual_data.path.0', 1)
-            ->assertJsonPath('prize', 50)
-            ->assertJsonPath('balance', 1040);
+            ->assertJsonPath('prize', 42)
+            ->assertJsonPath('balance', 1032);
 
         $payload = $response->json();
         $this->assertSame([1, 1, 1, 1, 1, 1], $payload['game']['visual_data']['path']);
-        $this->assertSame(50, $payload['game']['payout']);
-        $this->assertSame(40, $payload['user']['diff']);
+        $this->assertSame(42, $payload['game']['payout']);
+        $this->assertSame(32, $payload['user']['diff']);
         $this->assertSame(6, $payload['slot_index']);
         $this->assertSame(6, $payload['spline']['final_slot']);
         $this->assertCount(6, $payload['spline']['path']);
@@ -62,6 +62,43 @@ class PlinkoPlayApiTest extends TestCase
         $this->assertSame([1, 1, 1, 1, 1, 1], $history->meta['path'] ?? null);
         $this->assertSame(6, $history->meta['slot_index'] ?? null);
         $this->assertIsArray($history->meta['spline'] ?? null);
+    }
+
+    public function test_plinko_play_uses_new_fractional_multiplier_for_slot_two(): void
+    {
+        $this->bindRandomSequence([1, 1, 0, 0, 0, 0]);
+
+        $user = User::create([
+            'name' => 'Plinko Fractional User',
+            'email' => 'plinko-fractional@example.com',
+            'password' => 'password123',
+            'coins' => 1000,
+        ]);
+
+        Game::create([
+            'slug' => 'plinko',
+            'name' => 'Plinko',
+            'description' => 'Plinko test game',
+            'icon' => '/images/plinko.png',
+            'is_active' => true,
+        ]);
+
+        $response = $this->postJson('/api/plinko/play', [
+            'user_id' => $user->id,
+            'bet' => 10,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('game.visual_data.final_slot', 2)
+            ->assertJsonPath('prize', 8)
+            ->assertJsonPath('balance', 998);
+
+        $payload = $response->json();
+        $this->assertSame(2, $payload['slot_index']);
+        $this->assertSame(0.8, $payload['multiplier']);
+        $this->assertSame(8, $payload['game']['payout']);
+        $this->assertSame(-2, $payload['user']['diff']);
     }
 
     private function bindRandomSequence(array $values): void

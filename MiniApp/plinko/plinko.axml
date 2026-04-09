@@ -30,13 +30,13 @@
 
       <!-- Prize slots -->
       <view class="slots-row">
-        <view class="slot gold"><text class="slot-multi">10x</text></view>
-        <view class="slot blue"><text class="slot-multi">3x</text></view>
-        <view class="slot green"><text class="slot-multi">1x</text></view>
-        <view class="slot gray"><text class="slot-multi">0.5x</text></view>
-        <view class="slot green"><text class="slot-multi">1x</text></view>
-        <view class="slot blue"><text class="slot-multi">3x</text></view>
-        <view class="slot gold"><text class="slot-multi">10x</text></view>
+        <view class="slot gold"><text class="slot-multi">4.2x</text></view>
+        <view class="slot blue"><text class="slot-multi">1.7x</text></view>
+        <view class="slot green"><text class="slot-multi">0.8x</text></view>
+        <view class="slot gray"><text class="slot-multi">0.4x</text></view>
+        <view class="slot green"><text class="slot-multi">0.8x</text></view>
+        <view class="slot blue"><text class="slot-multi">1.7x</text></view>
+        <view class="slot gold"><text class="slot-multi">4.2x</text></view>
       </view>
     </view>
   </view>

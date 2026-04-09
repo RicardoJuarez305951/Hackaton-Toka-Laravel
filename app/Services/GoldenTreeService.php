@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 
 class GoldenTreeService
 {
-    private const STAGES = [
+    public const STAGES = [
         ['name' => 'Semilla', 'rate' => 1, 'threshold' => 0],
         ['name' => 'Brote', 'rate' => 1, 'threshold' => 300],
         ['name' => 'Plantula', 'rate' => 1, 'threshold' => 900],
@@ -21,20 +21,22 @@ class GoldenTreeService
         ['name' => 'Arbol Mistico', 'rate' => 7, 'threshold' => 115200],
     ];
 
-    private const EVENTS = [
+    public const EVENTS = [
         'drought' => ['name' => 'Sequia', 'action' => 'water'],
         'plague' => ['name' => 'Plaga', 'action' => 'spray'],
         'storm' => ['name' => 'Tormenta', 'action' => 'protect'],
         'leaves' => ['name' => 'Hojas Secas', 'action' => 'prune'],
     ];
 
-    private const EVENT_INTERVAL_SECONDS = 14400;
-    private const GENERATION_INTERVAL_SECONDS = 30;
-    private const EVENT_TIMEOUT_SECONDS = 60;
-    private const LEAVES_PENALTY_SECONDS = 300;
-    private const WATER_COST = 20;
-    private const WATER_BONUS_SECONDS = 600;
-    private const COMMISSION_RATE = 0.15;
+    public const EVENT_INTERVAL_SECONDS = 14400;
+    public const GENERATION_INTERVAL_SECONDS = 30;
+    public const EVENT_TIMEOUT_SECONDS = 60;
+    public const LEAVES_PENALTY_SECONDS = 600;
+    public const WATER_COST = 30;
+    public const WATER_BONUS_SECONDS = 300;
+    public const COMMISSION_RATE = 0.20;
+    public const EVENT_TRIGGER_CHANCE_PERCENT = 35;
+    public const DROUGHT_BANK_RETAIN_RATE = 0.70;
 
     public function __construct(private readonly SecureRandomService $random)
     {
@@ -207,6 +209,23 @@ class GoldenTreeService
         return self::WATER_COST;
     }
 
+    public static function economyConfig(): array
+    {
+        return [
+            'stages' => self::STAGES,
+            'events' => self::EVENTS,
+            'event_interval_seconds' => self::EVENT_INTERVAL_SECONDS,
+            'generation_interval_seconds' => self::GENERATION_INTERVAL_SECONDS,
+            'event_timeout_seconds' => self::EVENT_TIMEOUT_SECONDS,
+            'leaves_penalty_seconds' => self::LEAVES_PENALTY_SECONDS,
+            'water_cost' => self::WATER_COST,
+            'water_bonus_seconds' => self::WATER_BONUS_SECONDS,
+            'commission_rate' => self::COMMISSION_RATE,
+            'event_trigger_chance_percent' => self::EVENT_TRIGGER_CHANCE_PERCENT,
+            'drought_bank_retain_rate' => self::DROUGHT_BANK_RETAIN_RATE,
+        ];
+    }
+
     public function isValidEventId(?string $eventId): bool
     {
         return $eventId !== null && array_key_exists($eventId, self::EVENTS);
@@ -240,7 +259,7 @@ class GoldenTreeService
 
     private function maybeTriggerEvent(GoldenTreeState $state, Carbon $at): void
     {
-        if ($this->random->int(1, 100) > 30) {
+        if ($this->random->int(1, 100) > self::EVENT_TRIGGER_CHANCE_PERCENT) {
             return;
         }
 
@@ -254,7 +273,7 @@ class GoldenTreeService
     {
         switch ($eventId) {
             case 'drought':
-                $state->banked_tp = (int) floor($state->banked_tp * 0.8);
+                $state->banked_tp = (int) floor($state->banked_tp * self::DROUGHT_BANK_RETAIN_RATE);
                 break;
             case 'plague':
                 if ($state->stage > 0) {
@@ -291,7 +310,7 @@ class GoldenTreeService
         ];
     }
 
-    private function stageForSeconds(int $seconds): int
+    public function stageForSeconds(int $seconds): int
     {
         for ($index = count(self::STAGES) - 1; $index >= 0; $index--) {
             if ($seconds >= self::STAGES[$index]['threshold']) {

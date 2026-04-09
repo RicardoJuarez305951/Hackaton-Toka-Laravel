@@ -19,48 +19,57 @@ class GamePlayService
             return 1.0;
         }
 
-        $hoursSinceLastPlay = now()->diffInHours($streak->last_played_at);
+        $currentDay = now('UTC')->startOfDay();
+        $lastPlayedDay = $streak->last_played_at?->copy()->setTimezone('UTC')->startOfDay();
 
-        if ($hoursSinceLastPlay >= 24) {
+        if ($lastPlayedDay === null || $lastPlayedDay->diffInDays($currentDay) > 1) {
             $streak->multiplier = 1.0;
             $streak->streak_count = 0;
             $streak->save();
-
-            return 1.0;
         }
 
-        return (float) $streak->multiplier;
+        return 1.0;
     }
 
     public function updateStreak(User $user): void
     {
         $streak = $user->streak;
+        $now = now('UTC');
+        $currentDay = $now->copy()->startOfDay();
 
         if (! $streak) {
             UserStreak::create([
                 'user_id' => $user->id,
-                'multiplier' => 1.05,
+                'multiplier' => 1.0,
                 'streak_count' => 1,
-                'last_played_at' => now(),
+                'last_played_at' => $now,
             ]);
 
             return;
         }
 
-        $hoursSinceLastPlay = now()->diffInHours($streak->last_played_at);
+        $lastPlayedDay = $streak->last_played_at?->copy()->setTimezone('UTC')->startOfDay();
 
-        if ($hoursSinceLastPlay >= 24) {
-            $streak->multiplier = 1.05;
+        if ($lastPlayedDay === null || $lastPlayedDay->diffInDays($currentDay) > 1) {
+            $streak->multiplier = 1.0;
             $streak->streak_count = 1;
-            $streak->last_played_at = now();
+            $streak->last_played_at = $now;
             $streak->save();
 
             return;
         }
 
-        $streak->multiplier = min(1.5, $streak->multiplier + 0.05);
+        if ($lastPlayedDay->equalTo($currentDay)) {
+            $streak->multiplier = 1.0;
+            $streak->last_played_at = $now;
+            $streak->save();
+
+            return;
+        }
+
+        $streak->multiplier = 1.0;
         $streak->streak_count += 1;
-        $streak->last_played_at = now();
+        $streak->last_played_at = $now;
         $streak->save();
     }
 
@@ -95,4 +104,3 @@ class GamePlayService
         return DB::transaction($callback);
     }
 }
-
