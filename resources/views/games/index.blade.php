@@ -154,6 +154,22 @@
                 </div>
                 <div class="game-icon">🎰</div>
             </a>
+            
+            <a href="/hilo" class="game-card">
+                <div class="game-info">
+                    <h3>Hilo</h3>
+                    <p>Balatro balatrez</p>
+                </div>
+                <div class="game-icon">🃏</div>
+            </a>
+
+            <a href="/goldentree" class="game-card">
+                <div class="game-info">
+                    <h3>Goldentree</h3>
+                    <p>Cuida tu Árbol</p>
+                </div>
+                <div class="game-icon">🌲</div>
+            </a>
         </div>
 
         <div class="debug-panel">

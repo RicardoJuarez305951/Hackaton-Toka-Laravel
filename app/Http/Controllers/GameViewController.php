@@ -8,6 +8,18 @@ use Illuminate\Support\Facades\Hash;
 
 class GameViewController extends Controller
 {
+    private function renderMiniAppWeb(string $gameSlug)
+    {
+        $indexPath = public_path('miniapp-web/index.html');
+
+        abort_unless($indexPath && file_exists($indexPath), 503, 'MiniApp web build not found. Run npm run miniapp:build.');
+
+        return view('games.miniapp-host', [
+            'gameSlug' => $gameSlug,
+            'miniAppUrl' => "/miniapp-web/index.html#/{$gameSlug}",
+        ]);
+    }
+
     private function resolveDemoUser(): User
     {
         return User::firstOrCreate(
@@ -33,31 +45,26 @@ class GameViewController extends Controller
 
     public function rasca()
     {
-        $user = $this->resolveDemoUser();
-
-        return view('games.rasca', [
-            'user' => $user,
-            'balance' => $user->coins,
-        ]);
+        return $this->renderMiniAppWeb('rasca');
     }
 
     public function plinko()
     {
-        $user = $this->resolveDemoUser();
-
-        return view('games.plinko', [
-            'user' => $user,
-            'balance' => $user->coins,
-        ]);
+        return $this->renderMiniAppWeb('plinko');
     }
 
     public function ruleta()
     {
-        $user = $this->resolveDemoUser();
+        return $this->renderMiniAppWeb('ruleta');
+    }
 
-        return view('games.ruleta', [
-            'user' => $user,
-            'balance' => $user->coins,
-        ]);
+    public function hilo()
+    {
+        return $this->renderMiniAppWeb('hilo');
+    }
+
+    public function goldentree()
+    {
+        return $this->renderMiniAppWeb('goldentree');
     }
 }
