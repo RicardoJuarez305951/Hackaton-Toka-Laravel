@@ -4,107 +4,155 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\GamePlayService;
+use App\Services\GameResponseFactory;
+use App\Services\SecureRandomService;
+use App\Services\TransactionIdFactory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class RascaController extends Controller
 {
-    public function __construct(private readonly GamePlayService $gamePlayService)
-    {
+    private const LEVELS = [
+        ['probability' => 100, 'raw_payout' => 2, 'name' => 'common'],
+        ['probability' => 70, 'raw_payout' => 10, 'name' => 'uncommon'],
+        ['probability' => 40, 'raw_payout' => 25, 'name' => 'rare'],
+        ['probability' => 20, 'raw_payout' => 60, 'name' => 'epic'],
+        ['probability' => 10, 'raw_payout' => 200, 'name' => 'legendary'],
+    ];
+
+    public function __construct(
+        private readonly GamePlayService $gamePlayService,
+        private readonly GameResponseFactory $responseFactory,
+        private readonly TransactionIdFactory $transactionIdFactory,
+        private readonly SecureRandomService $random,
+    ) {
     }
 
-    public function play(Request $request)
+    public function play(Request $request): JsonResponse
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'user_id' => 'required|integer|exists:users,id',
             'bet' => 'required|integer|min:10|max:100',
         ]);
 
-        $user = $this->gamePlayService->resolvePlayer((int) $request->input('user_id'));
+        if ($validator->fails()) {
+            return $this->errorResponse('Datos de juego invalidos.', 422, $validator->errors()->toArray());
+        }
 
+        $user = $this->gamePlayService->resolvePlayer((int) $request->input('user_id'));
         if (! $user) {
-            return response()->json(['success' => false, 'message' => 'Usuario no encontrado'], 404);
+            return $this->errorResponse('Usuario no encontrado.', 404);
         }
 
         $bet = (int) $request->input('bet');
-
-        if ($user->coins < $bet) {
-            return response()->json(['success' => false, 'message' => 'Saldo insuficiente'], 400);
+        if (! $user->canPlay($bet)) {
+            return $this->errorResponse('Saldo insuficiente.', 400);
         }
 
         $game = $this->gamePlayService->findGameBySlug('rasca');
         if (! $game) {
-            return response()->json(['success' => false, 'message' => 'Juego rasca no configurado'], 500);
+            return $this->errorResponse('Juego rasca no configurado.', 500);
         }
 
-        $multiplier = $this->gamePlayService->getMultiplier($user);
-        $balanceBefore = $user->coins;
+        $balanceBefore = (int) $user->coins;
 
         try {
-            $response = $this->gamePlayService->withTransaction(function () use ($user, $bet, $game, $multiplier, $balanceBefore) {
+            $payload = $this->gamePlayService->withTransaction(function () use ($user, $bet, $game, $balanceBefore) {
                 $user->decrement('coins', $bet);
 
-                $prizes = [
-                    ['multiplier' => 0, 'weight' => 50],
-                    ['multiplier' => 0.25, 'weight' => 25],
-                    ['multiplier' => 0.5, 'weight' => 15],
-                    ['multiplier' => 1, 'weight' => 7],
-                    ['multiplier' => 2, 'weight' => 2],
-                    ['multiplier' => 5, 'weight' => 1],
-                ];
+                $steps = [];
+                $finalLevel = 0;
+                $rawPayout = 0;
 
-                $totalWeight = array_sum(array_column($prizes, 'weight'));
-                $random = mt_rand(1, $totalWeight);
-                $currentWeight = 0;
-                $selectedPrize = null;
+                foreach (self::LEVELS as $index => $level) {
+                    $roll = $this->random->int(1, 100);
+                    $passed = $roll <= $level['probability'];
 
-                foreach ($prizes as $prize) {
-                    $currentWeight += $prize['weight'];
-                    if ($random <= $currentWeight) {
-                        $selectedPrize = $prize;
+                    $steps[] = [
+                        'level' => $index + 1,
+                        'passed' => $passed,
+                        'raw_payout' => $level['raw_payout'],
+                        'probability' => $level['probability'],
+                        'roll' => $roll,
+                        'name' => $level['name'],
+                    ];
+
+                    if (! $passed) {
                         break;
                     }
+
+                    $finalLevel = $index + 1;
+                    $rawPayout = $level['raw_payout'];
                 }
 
-                $prizeMultiplier = (float) $selectedPrize['multiplier'];
-                $prizeAmount = (int) floor($bet * $prizeMultiplier * $multiplier);
-                $prizeAmount = max($prizeAmount, (int) floor($bet * 0.25));
+                $multiplier = $rawPayout / 10;
+                $payout = (int) floor($bet * $multiplier);
 
-                $user->increment('coins', $prizeAmount);
+                if ($payout > 0) {
+                    $user->increment('coins', $payout);
+                }
 
-                $gamePrize = $this->gamePlayService->findPrizeByMultiplier($game->id, $prizeMultiplier);
-
-                $this->gamePlayService->createHistory([
+                $balanceAfter = (int) $user->fresh()->coins;
+                $gamePrize = $this->gamePlayService->findPrizeByMultiplier($game->id, $multiplier);
+                $history = $this->gamePlayService->createHistory([
                     'user_id' => $user->id,
                     'game_id' => $game->id,
                     'game_prize_id' => $gamePrize?->id,
                     'bet' => $bet,
-                    'prize' => $prizeAmount,
+                    'prize' => $payout,
                     'balance_before' => $balanceBefore,
-                    'balance_after' => $user->fresh()->coins,
+                    'balance_after' => $balanceAfter,
+                    'meta' => [
+                        'type' => 'rasca',
+                        'steps' => $steps,
+                        'final_level' => $finalLevel,
+                        'raw_payout' => $rawPayout,
+                    ],
                     'played_at' => now(),
                 ]);
 
                 $this->gamePlayService->updateStreak($user);
 
-                return [
-                    'success' => true,
-                    'prize' => $prizeAmount,
-                    'multiplier' => $prizeMultiplier,
-                    'applied_multiplier' => $multiplier,
-                    'balance' => $user->fresh()->coins,
+                $visualData = [
+                    'steps' => $steps,
+                    'final_level' => $finalLevel,
+                    'raw_payout' => $rawPayout,
+                    'prize_map' => array_map(fn (array $level) => $level['raw_payout'], self::LEVELS),
                 ];
+
+                return $this->responseFactory->success(
+                    'rasca',
+                    $payout,
+                    $multiplier,
+                    $payout > 0,
+                    $visualData,
+                    $balanceAfter,
+                    $balanceAfter - $balanceBefore,
+                    $this->transactionIdFactory->make('rasca', $history->id),
+                    [
+                        'prize' => $payout,
+                        'multiplier' => $multiplier,
+                        'applied_multiplier' => 1.0,
+                        'balance' => $balanceAfter,
+                    ],
+                );
             });
 
-            return response()->json($response);
+            return response()->json($payload);
         } catch (\Throwable $e) {
             Log::error('Rasca play error: '.$e->getMessage());
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al procesar el juego',
-            ], 500);
+            return $this->errorResponse('Error al procesar el juego.', 500);
         }
     }
-}
 
+    private function errorResponse(string $message, int $status, array $errors = []): JsonResponse
+    {
+        $payload = $this->responseFactory->error($message, $status, $errors);
+        unset($payload['_status']);
+
+        return response()->json($payload, $status);
+    }
+}

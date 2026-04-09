@@ -4,111 +4,128 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\GamePlayService;
+use App\Services\GameResponseFactory;
 use App\Services\PlinkoPhysicsService;
+use App\Services\TransactionIdFactory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class PlinkoController extends Controller
 {
+    private const MULTIPLIERS = [5, 2, 1, 0.5, 1, 2, 5];
+
     public function __construct(
         private readonly GamePlayService $gamePlayService,
         private readonly PlinkoPhysicsService $plinkoPhysicsService,
-    )
-    {
+        private readonly GameResponseFactory $responseFactory,
+        private readonly TransactionIdFactory $transactionIdFactory,
+    ) {
     }
 
-    public function play(Request $request)
+    public function play(Request $request): JsonResponse
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'user_id' => 'required|integer|exists:users,id',
             'bet' => 'required|integer|min:10|max:100',
         ]);
 
-        $user = $this->gamePlayService->resolvePlayer((int) $request->input('user_id'));
+        if ($validator->fails()) {
+            return $this->errorResponse('Datos de juego invalidos.', 422, $validator->errors()->toArray());
+        }
 
+        $user = $this->gamePlayService->resolvePlayer((int) $request->input('user_id'));
         if (! $user) {
-            return response()->json(['success' => false, 'message' => 'Usuario no encontrado'], 404);
+            return $this->errorResponse('Usuario no encontrado.', 404);
         }
 
         $bet = (int) $request->input('bet');
-
-        if ($user->coins < $bet) {
-            return response()->json(['success' => false, 'message' => 'Saldo insuficiente'], 400);
+        if (! $user->canPlay($bet)) {
+            return $this->errorResponse('Saldo insuficiente.', 400);
         }
 
         $game = $this->gamePlayService->findGameBySlug('plinko');
         if (! $game) {
-            Log::warning('Plinko game is not configured', [
-                'game_slug' => 'plinko',
-                'user_id' => $user->id,
-                'route' => $request->path(),
-            ]);
-
-            return response()->json(['success' => false, 'message' => 'Juego plinko no configurado'], 500);
+            return $this->errorResponse('Juego plinko no configurado.', 500);
         }
 
-        $multiplier = $this->gamePlayService->getMultiplier($user);
-        $balanceBefore = $user->coins;
+        $balanceBefore = (int) $user->coins;
 
         try {
-            $response = $this->gamePlayService->withTransaction(function () use ($user, $bet, $game, $multiplier, $balanceBefore) {
+            $payload = $this->gamePlayService->withTransaction(function () use ($user, $bet, $game, $balanceBefore) {
                 $user->decrement('coins', $bet);
 
                 $simulation = $this->plinkoPhysicsService->simulate();
-                $spline = $simulation['spline'];
+                $path = $simulation['path'];
                 $slotIndex = (int) $simulation['slot_index'];
-                $multipliers = [10, 3, 1, 0.5, 1, 3, 10];
-                $prizeMultiplier = (float) ($multipliers[$slotIndex] ?? 1);
+                $multiplier = (float) (self::MULTIPLIERS[$slotIndex] ?? 1);
+                $payout = (int) floor($bet * $multiplier);
 
-                $prizeAmount = (int) floor($bet * $prizeMultiplier * $multiplier);
-                $prizeAmount = max($prizeAmount, (int) floor($bet * 0.25));
+                if ($payout > 0) {
+                    $user->increment('coins', $payout);
+                }
 
-                $user->increment('coins', $prizeAmount);
-
-                $gamePrize = $this->gamePlayService->findPrizeByMultiplier($game->id, $prizeMultiplier);
-
-                $this->gamePlayService->createHistory([
+                $balanceAfter = (int) $user->fresh()->coins;
+                $gamePrize = $this->gamePlayService->findPrizeByMultiplier($game->id, $multiplier);
+                $history = $this->gamePlayService->createHistory([
                     'user_id' => $user->id,
                     'game_id' => $game->id,
                     'game_prize_id' => $gamePrize?->id,
                     'bet' => $bet,
-                    'prize' => $prizeAmount,
+                    'prize' => $payout,
                     'balance_before' => $balanceBefore,
-                    'balance_after' => $user->fresh()->coins,
+                    'balance_after' => $balanceAfter,
                     'meta' => [
-                        'type' => 'plinko_v2',
-                        'seed' => $spline['seed'] ?? null,
+                        'type' => 'plinko',
+                        'path' => $path,
                         'slot_index' => $slotIndex,
-                        'positions' => $spline['positions'] ?? [],
-                        'keyframes' => $spline['keyframes'] ?? [],
-                        'duration_ms' => $spline['duration_ms'] ?? null,
-                        'board' => $spline['board'] ?? null,
-                        'physics' => $spline['physics'] ?? null,
+                        'spline' => $simulation['spline'],
                     ],
                     'played_at' => now(),
                 ]);
 
                 $this->gamePlayService->updateStreak($user);
 
-                return [
-                    'success' => true,
-                    'prize' => $prizeAmount,
-                    'multiplier' => $prizeMultiplier,
-                    'applied_multiplier' => $multiplier,
-                    'slot_index' => $slotIndex,
-                    'spline' => $spline,
-                    'balance' => $user->fresh()->coins,
+                $visualData = [
+                    'path' => $path,
+                    'final_slot' => $slotIndex,
+                    'spline' => $simulation['spline'],
                 ];
+
+                return $this->responseFactory->success(
+                    'plinko',
+                    $payout,
+                    $multiplier,
+                    $payout > 0,
+                    $visualData,
+                    $balanceAfter,
+                    $balanceAfter - $balanceBefore,
+                    $this->transactionIdFactory->make('plinko', $history->id),
+                    [
+                        'prize' => $payout,
+                        'multiplier' => $multiplier,
+                        'applied_multiplier' => 1.0,
+                        'slot_index' => $slotIndex,
+                        'balance' => $balanceAfter,
+                        'spline' => $simulation['spline'],
+                    ],
+                );
             });
 
-            return response()->json($response);
+            return response()->json($payload);
         } catch (\Throwable $e) {
             Log::error('Plinko play error: '.$e->getMessage());
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al procesar el juego',
-            ], 500);
+            return $this->errorResponse('Error al procesar el juego.', 500);
         }
+    }
+
+    private function errorResponse(string $message, int $status, array $errors = []): JsonResponse
+    {
+        $payload = $this->responseFactory->error($message, $status, $errors);
+        unset($payload['_status']);
+
+        return response()->json($payload, $status);
     }
 }
